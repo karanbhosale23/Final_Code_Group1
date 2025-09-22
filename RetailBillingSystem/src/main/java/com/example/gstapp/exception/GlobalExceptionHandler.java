@@ -6,8 +6,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ControllerAdvice;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.http.HttpStatus;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -23,12 +21,12 @@ public class GlobalExceptionHandler {
                 .orElse("Invalid input");
         return ResponseEntity.badRequest().body(errorMessage);
     }
-<<<<<<< HEAD
-    
-   @ExceptionHandler(UsernameNotFoundException.class)
-   public ResponseEntity<String> handleUsernameNotFoundException(UsernameNotFoundException ex) {
-       return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
-   }
+
+    // Handle user not found (404) errors
+    @ExceptionHandler(UsernameNotFoundException.class)
+    public ResponseEntity<String> handleUsernameNotFoundException(UsernameNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException ex) {
@@ -41,13 +39,4 @@ public class GlobalExceptionHandler {
         }
         return ResponseEntity.badRequest().body(msg);
     }
-=======
-
-    // Handle user not found (404) errors
-    @ExceptionHandler(UsernameNotFoundException.class)
-    public ResponseEntity<String> handleUsernameNotFoundException(UsernameNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
-    }
-
->>>>>>> 6d4e851fa4c0e72422c2bda4709966253ae315e5
 }
