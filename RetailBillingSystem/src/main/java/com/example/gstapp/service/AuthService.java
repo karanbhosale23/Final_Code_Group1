@@ -1,4 +1,3 @@
-// src/main/java/com/example/gstapp/service/AuthService.java
 package com.example.gstapp.service;
 
 import com.example.gstapp.dto.AuthRequestDTO;
@@ -12,9 +11,7 @@ import com.example.gstapp.repository.PasswordResetTokenRepository;
 import com.example.gstapp.repository.UserRepository;
 import com.example.gstapp.util.JwtUtil;
 import java.util.UUID;
-
 import java.time.LocalDateTime;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -30,6 +27,7 @@ public class AuthService {
 
     @Autowired
     private EmailService emailService;
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
@@ -121,17 +119,18 @@ public class AuthService {
         return response;
     }
 
-    // Forgot password method
+    // Forgot password method — sends email only if user exists
     public void forgotPassword(String email) {
-        // Validate user existence
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User with email " + email + " not found"));
+                .orElseThrow(() -> new UsernameNotFoundException("No user registered with email: " + email));
 
-        // Generate unique reset token
+        // Remove previous token for this user if exists (enhances security)
+        passwordResetTokenRepository.findByEmail(email)
+                .ifPresent(passwordResetTokenRepository::delete);
+
+        // Generate unique reset token and save
         String token = UUID.randomUUID().toString();
-
-        // Save token with 30 minutes expiry
-        PasswordResetToken prt = new PasswordResetToken(token, email, LocalDateTime.now().plusMinutes(30));
+        PasswordResetToken prt = new PasswordResetToken(token, email, LocalDateTime.now().plusMinutes(1));
         passwordResetTokenRepository.save(prt);
 
         // Send reset link email with token
