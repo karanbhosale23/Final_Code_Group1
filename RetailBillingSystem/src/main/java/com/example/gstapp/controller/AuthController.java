@@ -7,6 +7,7 @@ import com.example.gstapp.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -20,27 +21,33 @@ public class AuthController {
     public AuthController(AuthService authService) {
         this.authService = authService;
     }
-
+    // http://localhost:8080/api/v1/auth/register
     @PostMapping("/register")
     public ResponseEntity<String> register(@Valid @RequestBody RegisterRequestDTO request) {
         authService.register(request);
         return new ResponseEntity<>("User registered successfully", HttpStatus.CREATED);
     }
 
+    //http://localhost:8080/api/v1/auth/login
     @PostMapping("/login")
     public ResponseEntity<AuthResponseDTO> login(@RequestBody AuthRequestDTO request) {
         AuthResponseDTO response = authService.authenticate(request);
         return ResponseEntity.ok(response);
     }
 
-    // Forgot password endpoint
+   // http://localhost:8080/api/v1/auth/forgot-password
     @PostMapping("/forgot-password")
     public ResponseEntity<String> forgotPassword(@RequestBody Map<String, String> request) {
-        String email = request.get("email");
-        authService.forgotPassword(email);
-        return ResponseEntity.ok("Password reset link sent to your email");
+        try {
+            String email = request.get("email");
+            authService.forgotPassword(email);
+            return ResponseEntity.ok("Password reset link sent to your email");
+        } catch (UsernameNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found with this email");
+        }
     }
 
+    // http://localhost:8080/api/v1/auth/reset-password
     // Reset password endpoint
     @PostMapping("/reset-password")
     public ResponseEntity<String> resetPassword(@RequestBody Map<String, String> request) {
@@ -48,5 +55,13 @@ public class AuthController {
         String newPassword = request.get("newPassword");
         authService.resetPassword(token, newPassword);
         return ResponseEntity.ok("Password has been reset successfully");
+    }
+
+    // Validate reset token endpoint (for page-load check)
+    // http://localhost:8080/api/v1/auth/validate-reset-token
+    @GetMapping("/validate-reset-token")
+    public ResponseEntity<String> validateResetToken(@RequestParam("token") String token) {
+        authService.validateResetToken(token);
+        return ResponseEntity.ok("Token is valid");
     }
 }

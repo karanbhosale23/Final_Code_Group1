@@ -121,17 +121,18 @@ public class AuthService {
         return response;
     }
 
-    // Forgot password method
+    // Forgot password method — sends email only if user exists
     public void forgotPassword(String email) {
-        // Validate user existence
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User with email " + email + " not found"));
+                .orElseThrow(() -> new UsernameNotFoundException("No user registered with email: " + email));
 
-        // Generate unique reset token
+        // Remove previous token for this user if exists (enhances security)
+        passwordResetTokenRepository.findByEmail(email)
+                .ifPresent(passwordResetTokenRepository::delete);
+
+        // Generate unique reset token and save
         String token = UUID.randomUUID().toString();
-
-        // Save token with 30 minutes expiry
-        PasswordResetToken prt = new PasswordResetToken(token, email, LocalDateTime.now().plusMinutes(30));
+        PasswordResetToken prt = new PasswordResetToken(token, email, LocalDateTime.now().plusMinutes(1));
         passwordResetTokenRepository.save(prt);
 
         // Send reset link email with token
@@ -155,6 +156,16 @@ public class AuthService {
         userRepository.save(user);
 
         passwordResetTokenRepository.delete(passwordResetToken);
+    }
+
+    // Validate a reset token without changing the password
+    public void validateResetToken(String token) {
+        PasswordResetToken passwordResetToken = passwordResetTokenRepository.findByToken(token)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid password reset token"));
+
+        if (passwordResetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Expired password reset token");
+        }
     }
 
 }

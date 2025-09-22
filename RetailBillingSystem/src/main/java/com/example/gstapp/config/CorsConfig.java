@@ -16,10 +16,17 @@ public class CorsConfig {
 
         // Allow your dev frontend origins
         cors.setAllowedOrigins(Arrays.asList(
-                "http://localhost:8081",   // your current frontend
-                "http://localhost:19006",  // expo web
+                "http://localhost:8081",   // metro/expo
+                "http://localhost:19006",  // expo web (newer)
                 "http://192.168.1.49:19000",
                 "http://192.168.1.49:19006"
+        ));
+
+        // Additionally allow common localhost/LAN patterns during development
+        cors.setAllowedOriginPatterns(Arrays.asList(
+                "http://localhost:*",
+                "http://127.0.0.1:*",
+                "http://192.168.*:*"
         ));
 
         cors.setAllowedHeaders(Arrays.asList("Origin", "Content-Type", "Accept", "Authorization"));

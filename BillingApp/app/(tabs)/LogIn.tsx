@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Constants from "expo-constants";
-import Ionicons from "@expo/vector-icons/Ionicons"; // 👈 Add this for eye icon
+import Ionicons from "@expo/vector-icons/Ionicons"; // 👈 Eye icon for password visibility
 
 const getApiBase = () => {
   const debuggerHost =
@@ -64,8 +64,15 @@ const LogIn = () => {
           params: { username: username.trim() },
         });
       } else {
-        const errorText = await response.text();
-        Alert.alert("Login Failed", errorText || `Status ${response.status}`);
+        // ✅ Custom error handling
+        if (response.status === 401) {
+          Alert.alert("Login Failed", "Wrong password. Please try again.");
+        } else if (response.status === 404) {
+          Alert.alert("Login Failed", "User not found.");
+        } else {
+          const errorText = await response.text();
+          Alert.alert("Login Failed", errorText || `Status ${response.status}`);
+        }
       }
     } catch (err) {
       Alert.alert("Error", "Could not connect to backend");
@@ -94,9 +101,14 @@ const LogIn = () => {
           />
 
           {/* Password input with Eye Icon */}
-          <View style={styles.passwordContainer}>
+          <View
+            style={[
+              styles.input,
+              { flexDirection: "row", alignItems: "center", paddingHorizontal: 10 },
+            ]}
+          >
             <TextInput
-              style={styles.passwordInput}
+              style={{ flex: 1, height: 45 }}
               placeholder="Password"
               value={password}
               onChangeText={setPassword}
@@ -186,19 +198,6 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     paddingHorizontal: 10,
     marginBottom: 15,
-  },
-  passwordContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#2576e0",
-    borderRadius: 6,
-    marginBottom: 15,
-    paddingHorizontal: 10,
-  },
-  passwordInput: {
-    flex: 1,
-    height: 45,
   },
   eyeIcon: {
     padding: 5,

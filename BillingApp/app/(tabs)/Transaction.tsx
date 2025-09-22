@@ -1,13 +1,15 @@
 import React from "react";
 import { useCallback, useState, useRef, useEffect } from "react";
-import { StyleSheet, View, Text, Alert } from "react-native";
+import { StyleSheet, View, Text, Alert, TouchableOpacity } from "react-native";
 import { Animated, Easing } from "react-native";
-import { Modal, TouchableOpacity } from "react-native";
+import { Modal } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams } from "expo-router";
+import { useRouter } from "expo-router";
 import { useFocusEffect } from "expo-router";
 
 const Transaction = () => {
+  const router = useRouter();
   const [showWelcomeFlag, setShowWelcomeFlag] = useState(true);
   const slideAnim = useRef(new Animated.Value(400)).current; // Start off-screen right
   const params = useLocalSearchParams();
@@ -62,7 +64,9 @@ const Transaction = () => {
           Party Details
         </Text>
         <Text style={[styles.addTxn, styles.txnClr]}>Add Txn</Text>
-        <Text style={[styles.saleReport, styles.txnClr]}>Sale Report</Text>
+        <TouchableOpacity onPress={() => router.push("/SaleReport")}> 
+          <Text style={[styles.saleReport, styles.txnClr]}>Sale Report</Text>
+        </TouchableOpacity>
         <Text style={[styles.txnSettings, styles.txnClr]}>Txn Settings</Text>
         <Text style={[styles.showAll, styles.txnClr]}>Show All</Text>
         <View style={[styles.child4, styles.childPosition]} />

@@ -116,8 +116,6 @@ const RegistrationPage = () => {
               value={business}
               onChangeText={setBusinessname}
             />
-
-            {/* Sign Up Button */}
             <TouchableOpacity style={styles.button} onPress={handleSignUp}>
               <Text style={styles.buttonText}>Sign Up</Text>
             </TouchableOpacity>
