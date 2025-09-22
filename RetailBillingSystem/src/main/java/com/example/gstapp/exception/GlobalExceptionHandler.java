@@ -6,9 +6,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.http.HttpStatus;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
+
+    // Handle validation errors
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<String> handleValidationExceptions(MethodArgumentNotValidException ex) {
         String errorMessage = ex.getBindingResult()
@@ -19,6 +23,7 @@ public class GlobalExceptionHandler {
                 .orElse("Invalid input");
         return ResponseEntity.badRequest().body(errorMessage);
     }
+<<<<<<< HEAD
     
    @ExceptionHandler(UsernameNotFoundException.class)
    public ResponseEntity<String> handleUsernameNotFoundException(UsernameNotFoundException ex) {
@@ -36,4 +41,13 @@ public class GlobalExceptionHandler {
         }
         return ResponseEntity.badRequest().body(msg);
     }
+=======
+
+    // Handle user not found (404) errors
+    @ExceptionHandler(UsernameNotFoundException.class)
+    public ResponseEntity<String> handleUsernameNotFoundException(UsernameNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+>>>>>>> 6d4e851fa4c0e72422c2bda4709966253ae315e5
 }

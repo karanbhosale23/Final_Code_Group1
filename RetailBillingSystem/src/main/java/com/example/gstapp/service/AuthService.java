@@ -1,4 +1,3 @@
-// src/main/java/com/example/gstapp/service/AuthService.java
 package com.example.gstapp.service;
 
 import com.example.gstapp.dto.AuthRequestDTO;
@@ -12,9 +11,7 @@ import com.example.gstapp.repository.PasswordResetTokenRepository;
 import com.example.gstapp.repository.UserRepository;
 import com.example.gstapp.util.JwtUtil;
 import java.util.UUID;
-
 import java.time.LocalDateTime;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -30,6 +27,7 @@ public class AuthService {
 
     @Autowired
     private EmailService emailService;
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
