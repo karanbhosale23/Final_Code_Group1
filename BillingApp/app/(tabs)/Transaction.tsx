@@ -64,7 +64,7 @@ const Transaction = () => {
           Party Details
         </Text>
         <Text style={[styles.addTxn, styles.txnClr]}>Add Txn</Text>
-        <TouchableOpacity onPress={() => router.push("/SaleReport")}> 
+        <TouchableOpacity onPress={() => router.push('/SaleReport' as any)}>
           <Text style={[styles.saleReport, styles.txnClr]}>Sale Report</Text>
         </TouchableOpacity>
         <Text style={[styles.txnSettings, styles.txnClr]}>Txn Settings</Text>
