@@ -10,7 +10,7 @@ export default function ResetExpired() {
       <Text style={styles.subtitle}>
         Your password reset link has expired. For security reasons, reset links are valid for only 1 minute.
       </Text>
-      <TouchableOpacity style={styles.button} onPress={() => router.replace('/(tabs)/LogIn')}>
+      <TouchableOpacity style={styles.button} onPress={() => router.replace('../Authentication/LogIn')}>
         <Text style={styles.buttonText}>Back to Login</Text>
       </TouchableOpacity>
     </View>

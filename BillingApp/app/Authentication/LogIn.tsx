@@ -1,4 +1,4 @@
-import ForgetPass from "../(tabs)/ForgetPass";
+import ForgetPass from "../Authentication/ForgetPass";
 import React, { useState } from "react";
 import { useRouter } from "expo-router";
 import {
@@ -41,7 +41,7 @@ const LogIn = () => {
 
     if (username.trim() === "admin" && password.trim() === "adminpassword") {
       Alert.alert("Admin Login", "Welcome, Admin!");
-      router.push("../(tabs)/AdminPage");
+      router.push("../User_Dashboard/AdminPage");
       return;
     }
 
@@ -60,7 +60,7 @@ const LogIn = () => {
         Alert.alert("Welcome", `Hello, ${username.trim()}!`);
         console.log("Login successful!", data);
         router.push({
-          pathname: "../(tabs)/Transaction",
+          pathname: "../User_Dashboard/Transaction",
           params: { username: username.trim() },
         });
       } else {

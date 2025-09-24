@@ -1,12 +1,15 @@
 import * as React from "react";
 import {StyleSheet, View, Text, Image} from "react-native";
 // Import sale_report images
-const calendarImg = require("../../assets/sale_report/calendar.jpg");
-const filterImg = require("../../assets/sale_report/filter.jpg");
-const arrowImg = require("../../assets/sale_report/Arrow 2.png");
-const pdfIcon = require("../../assets/sale_report/pdf_icon.jpg");
-const xlsIcon = require("../../assets/sale_report/xls_icon.jpg");
-const dropDownImg = require("../../assets/sale_report/drop down.jpg");
+// Using existing placeholder images since assets/sale_report is empty
+// From app/SaleReport/Components -> up to project root then assets/
+const placeholder = require("../../../assets/HomePage1/Rectangle 352.png");
+const calendarImg = placeholder;
+const filterImg = placeholder;
+const arrowImg = placeholder;
+const pdfIcon = placeholder;
+const xlsIcon = placeholder;
+const dropDownImg = placeholder;
 import { SafeAreaView } from "react-native-safe-area-context";
 // Remove invalid Component import
 
