@@ -11,6 +11,7 @@ const TransactionPage = () => {
   const displayName = Array.isArray(username) ? username[0] : username;
   
   return (
+<<<<<<< HEAD
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
@@ -19,6 +20,43 @@ const TransactionPage = () => {
           <Ionicons name="code-slash" size={20} color="#fff" />
           <Ionicons name="settings-outline" size={20} color="#fff" />
         </View>
+=======
+    <SafeAreaView style={styles.viewBg}>
+      {/* Animated flag-style welcome message */}
+      {showWelcomeFlag && (
+        <Animated.View
+          style={[styles.flagContainer, { transform: [{ translateX: slideAnim }] }]}
+        >
+          <Text style={styles.flagText}>Welcome, {username}!</Text>
+        </Animated.View>
+      )}
+      <View style={[styles.view, styles.viewBg]}>
+        <View style={[styles.child, styles.childPosition]} />
+        <Text style={styles.harshalThakare}>{username}</Text>
+        <View style={styles.item} />
+        <Text style={styles.quickLinks}>Quick Links</Text>
+        <View style={[styles.inner, styles.innerLayout]} />
+        <View style={[styles.rectangleView, styles.innerLayout]} />
+        <Text style={[styles.transactionDetails, styles.detailsTypo]}>
+          Transaction Details
+        </Text>
+        <Text style={[styles.partyDetails, styles.detailsTypo]}>
+          Party Details
+        </Text>
+        <Text style={[styles.addTxn, styles.txnClr]}>Add Txn</Text>
+        <TouchableOpacity onPress={() => router.push('/SaleReport' as any)}>
+          <Text style={[styles.saleReport, styles.txnClr]}>Sale Report</Text>
+        </TouchableOpacity>
+        <Text style={[styles.txnSettings, styles.txnClr]}>Txn Settings</Text>
+        <Text style={[styles.showAll, styles.txnClr]}>Show All</Text>
+        <View style={[styles.child4, styles.childPosition]} />
+        <Text style={[styles.home, styles.homeTypo]}>HOME</Text>
+        <Text style={[styles.dashboard, styles.child9Position]}>DASHBOARD</Text>
+        <Text style={[styles.items, styles.homeTypo]}>ITEMS</Text>
+        <Text style={[styles.menu, styles.homeTypo]}>MENU</Text>
+        <View style={[styles.child9, styles.child9Position]} />
+        <Text style={[styles.addNewSale, styles.homeTypo]}>Add New Sale</Text>
+>>>>>>> a10448f3b5b8838e5eb95b606f3a467b6a7e115d
       </View>
 
       {/* User Section */}
