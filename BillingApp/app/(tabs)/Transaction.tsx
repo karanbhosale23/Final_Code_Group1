@@ -1,342 +1,308 @@
-import React from "react";
-import { useCallback, useState, useRef, useEffect } from "react";
-import { StyleSheet, View, Text, Alert, TouchableOpacity } from "react-native";
-import { Animated, Easing } from "react-native";
-import { Modal } from "react-native";
+import * as React from "react";
+import {StyleSheet, View, Text, TouchableOpacity} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from '@expo/vector-icons';
+import Footer from "../../components/App_Components/Footer";
 import { useLocalSearchParams } from "expo-router";
-import { useRouter } from "expo-router";
-import { useFocusEffect } from "expo-router";
 
-const Transaction = () => {
-  const router = useRouter();
-  const [showWelcomeFlag, setShowWelcomeFlag] = useState(true);
-  const slideAnim = useRef(new Animated.Value(400)).current; // Start off-screen right
-  const params = useLocalSearchParams();
-  const username = params.username || "Merchant";
-
-  // Show popup every time Transaction page is focused
-  // Show custom modal on first mount/focus
-  useFocusEffect(
-    useCallback(() => {
-      setShowWelcomeFlag(true);
-      // Slide in from right
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 400,
-        easing: Easing.out(Easing.ease),
-        useNativeDriver: true,
-      }).start();
-      // Slide out after 2 seconds
-      const timer = setTimeout(() => {
-        Animated.timing(slideAnim, {
-          toValue: 400,
-          duration: 400,
-          easing: Easing.in(Easing.ease),
-          useNativeDriver: true,
-        }).start(() => setShowWelcomeFlag(false));
-      }, 2000);
-      return () => clearTimeout(timer);
-    }, [username, slideAnim])
-  );
-
+const TransactionPage = () => {
+  const [activeTab, setActiveTab] = React.useState('transaction');
+  const { username } = useLocalSearchParams<{ username?: string }>();
+  const displayName = Array.isArray(username) ? username[0] : username;
+  
   return (
-    <SafeAreaView style={styles.viewBg}>
-      {/* Animated flag-style welcome message */}
-      {showWelcomeFlag && (
-        <Animated.View
-          style={[styles.flagContainer, { transform: [{ translateX: slideAnim }] }]}
-        >
-          <Text style={styles.flagText}>Welcome, {username}!</Text>
-        </Animated.View>
-      )}
-      <View style={[styles.view, styles.viewBg]}>
-        <View style={[styles.child, styles.childPosition]} />
-        <Text style={styles.harshalThakare}>{username}</Text>
-        <View style={styles.item} />
-        <Text style={styles.quickLinks}>Quick Links</Text>
-        <View style={[styles.inner, styles.innerLayout]} />
-        <View style={[styles.rectangleView, styles.innerLayout]} />
-        <Text style={[styles.transactionDetails, styles.detailsTypo]}>
-          Transaction Details
-        </Text>
-        <Text style={[styles.partyDetails, styles.detailsTypo]}>
-          Party Details
-        </Text>
-        <Text style={[styles.addTxn, styles.txnClr]}>Add Txn</Text>
-        <TouchableOpacity onPress={() => router.push("/SaleReport")}> 
-          <Text style={[styles.saleReport, styles.txnClr]}>Sale Report</Text>
-        </TouchableOpacity>
-        <Text style={[styles.txnSettings, styles.txnClr]}>Txn Settings</Text>
-        <Text style={[styles.showAll, styles.txnClr]}>Show All</Text>
-        <View style={[styles.child4, styles.childPosition]} />
-        <Text style={[styles.home, styles.homeTypo]}>HOME</Text>
-        <Text style={[styles.dashboard, styles.child9Position]}>DASHBOARD</Text>
-        <Text style={[styles.items, styles.homeTypo]}>ITEMS</Text>
-        <Text style={[styles.menu, styles.homeTypo]}>MENU</Text>
-        <View style={[styles.child9, styles.child9Position]} />
-        <Text style={[styles.addNewSale, styles.homeTypo]}>Add New Sale</Text>
+    <SafeAreaView style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Home page</Text>
+        <View style={styles.headerIcons}>
+          <Ionicons name="code-slash" size={20} color="#fff" />
+          <Ionicons name="settings-outline" size={20} color="#fff" />
+        </View>
       </View>
+
+      {/* User Section */}
+      <View style={styles.userSection}>
+        <View style={styles.userInfo}>
+          <Ionicons name="person-circle-outline" size={22} color="#000" />
+          <Text style={styles.userName}>{displayName || 'User'}</Text>
+        </View>
+        <View style={styles.userIcons}>
+          <Ionicons name="notifications-outline" size={22} color="#000" />
+          <Ionicons name="settings-outline" size={22} color="#000" />
+        </View>
+      </View>
+
+      {/* Tab Navigation */}
+      <View style={styles.tabContainer}>
+        <TouchableOpacity 
+          style={[styles.tab, activeTab === 'transaction' && styles.activeTab]}
+          onPress={() => setActiveTab('transaction')}
+        >
+          <Text style={[styles.tabText, activeTab === 'transaction' && styles.activeTabText]}>
+            Transaction Details
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={[styles.tab, activeTab === 'party' && styles.activeTab]}
+          onPress={() => setActiveTab('party')}
+        >
+          <Text style={[styles.tabText, activeTab === 'party' && styles.activeTabText]}>
+            Party Details
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Quick Links Section */}
+      <View style={styles.quickLinksContainer}>
+        <Text style={styles.quickLinksTitle}>Quick Links</Text>
+        <View style={styles.quickLinksGrid}>
+          <TouchableOpacity style={styles.quickLinkItem}>
+            <View style={styles.quickLinkIcon}>
+              <Ionicons name="add-circle" size={24} color="#c6040a" />
+            </View>
+            <Text style={styles.quickLinkText}>Add Txn</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={styles.quickLinkItem}>
+            <View style={styles.quickLinkIcon}>
+              <Ionicons name="bar-chart" size={24} color="#4a90a4" />
+            </View>
+            <Text style={styles.quickLinkText}>Sale Report</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={styles.quickLinkItem}>
+            <View style={styles.quickLinkIcon}>
+              <Ionicons name="settings" size={24} color="#666" />
+            </View>
+            <Text style={styles.quickLinkText}>Txn Settings</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={styles.quickLinkItem}>
+            <View style={styles.quickLinkIcon}>
+              <Ionicons name="apps" size={24} color="#4a90a4" />
+            </View>
+            <Text style={styles.quickLinkText}>Show All</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Main Content Area */}
+      <View style={styles.mainContent}>
+        {/* This area can be filled with transaction details or party details based on active tab */}
+      </View>
+
+      {/* Add New Sale Button */}
+      <TouchableOpacity style={styles.addSaleButton}>
+        <Text style={styles.addSaleText}>Add New Sale</Text>
+      </TouchableOpacity>
+      
+      {/* Voice Button */}
+      <TouchableOpacity style={styles.voiceButton}>
+        <Ionicons name="mic" size={24} color="#fff" />
+      </TouchableOpacity>
+
+      {/* Bottom Navigation */}
+      <Footer />
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  flagContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: '#4dcc62ff',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    alignItems: 'center',
-    zIndex: 100,
-    elevation: 10,
-    borderBottomLeftRadius: 12,
-    borderBottomRightRadius: 12,
-    marginTop: 0,
-  },
-  flagText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  welcomeContainer: {
-    width: '100%',
-    backgroundColor: '#2576e0',
-    paddingVertical: 16,
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  welcomeText: {
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  transaction: {
+  container: {
     flex: 1,
     backgroundColor: "#d3e4f4",
   },
-  viewBg: {
-    backgroundColor: "#d3e4f4",
-    flex: 1,
+  
+  // Header Styles
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    paddingTop: 40,
   },
-  childPosition: {
-    width: 412,
-    left: 0,
-    backgroundColor: "#fff",
-    position: "absolute",
+  headerTitle: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '500',
   },
-  depth4FramePosition: {
-    opacity: 0.8,
-    position: "absolute",
+  headerIcons: {
+    flexDirection: 'row',
+    gap: 15,
   },
-  innerLayout: {
-    height: 40,
-    width: 175,
-    borderWidth: 3,
-    borderStyle: "solid",
-    top: 85,
-    borderRadius: 30,
-    position: "absolute",
-  },
-  detailsTypo: {
-    fontSize: 13,
-    top: 97,
-    textAlign: "left",
-    fontFamily: "Inter-Medium",
-    fontWeight: "500",
-    position: "absolute",
-  },
-  childLayout1: {
-    width: 50,
-    top: 209,
-    height: 50,
-    position: "absolute",
-  },
-  txnClr: {
-    opacity: 0.7,
-    color: "#000",
-  },
-  childLayout: {
-    width: 40,
-    top: 850,
-    height: 40,
-    position: "absolute",
-  },
-  homeTypo: {
-    fontFamily: "Inter-SemiBold",
-    fontWeight: "600",
-    lineHeight: 18,
-    fontSize: 15,
-    textAlign: "left",
-  },
-  child9Position: {
-    left: 118,
-    position: "absolute",
-  },
-  view: {
-    width: "100%",
-    height: 917,
-    overflow: "hidden",
-  },
-  child: {
-    top: 0,
-    boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.25)",
-    shadowColor: "rgba(0, 0, 0, 0.25)",
+  
+  // User Section
+  userSection: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
-      height: 4,
+      height: 2,
     },
-    shadowRadius: 4,
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  userName: {
+    fontSize: 20,
+    fontWeight: '500',
+    color: '#000',
+  },
+  userIcons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  userInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  
+  // Tab Navigation
+  tabContainer: {
+    flexDirection: 'row',
+    marginHorizontal: 20,
+    marginTop: 20,
+    marginBottom: 15,
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    marginHorizontal: 5,
+    backgroundColor: '#fff',
+    borderWidth: 1.5,
+    borderColor: 'rgba(0, 0, 0, 0.2)',
+    alignItems: 'center',
+  },
+  activeTab: {
+    backgroundColor: 'rgba(198, 4, 10, 0.1)',
+    borderColor: '#c6040a',
+    borderWidth: 2,
+  },
+  tabText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#000',
+    opacity: 0.6,
+  },
+  activeTabText: {
+    color: '#c6040a',
+    opacity: 1,
+    fontWeight: '600',
+  },
+  
+  // Quick Links Section
+  quickLinksContainer: {
+    backgroundColor: '#fff',
+    marginHorizontal: 20,
+    borderRadius: 8,
+    padding: 15,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  quickLinksTitle: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#000',
+    marginBottom: 15,
+  },
+  quickLinksGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  quickLinkItem: {
+    alignItems: 'center',
+    width: 70,
+  },
+  quickLinkIcon: {
+    width: 45,
+    height: 45,
+    borderRadius: 8,
+    backgroundColor: '#f8f9fa',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+  },
+  quickLinkText: {
+    fontSize: 11,
+    color: '#000',
+    opacity: 0.8,
+    textAlign: 'center',
+    fontWeight: '500',
+  },
+  
+  // Main Content
+  mainContent: {
+    flex: 1,
+    marginHorizontal: 20,
+    marginTop: 20,
+  },
+  
+  // Add New Sale Button
+  addSaleButton: {
+    backgroundColor: '#c6040a',
+    marginHorizontal: 80,
+    marginRight: 100,
+    marginBottom: 20,
+    paddingVertical: 12,
+    borderRadius: 25,
+    alignItems: 'center',
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
     elevation: 4,
-    shadowOpacity: 1,
-    height: 145,
   },
-  harshalThakare: {
-    top: 21,
-    left: 60,
-    fontSize: 22,
-    textAlign: "left",
-    fontFamily: "Inter-Medium",
-    fontWeight: "500",
-    color: "#000",
-    position: "absolute",
-  },
-  item: {
-    top: 162,
-    left: 16,
-    borderRadius: 10,
-    width: 381,
-    height: 144,
-    backgroundColor: "#fff",
-    position: "absolute",
-  },
-  quickLinks: {
-    top: 173,
-    left: 23,
+  addSaleText: {
+    color: '#fff',
     fontSize: 15,
-    textAlign: "left",
-    color: "#000",
-    fontFamily: "Inter-Medium",
-    fontWeight: "500",
-    position: "absolute",
+    fontWeight: '600',
   },
-  inner: {
-    left: 31,
-    backgroundColor: "rgba(201, 35, 35, 0.2)",
-    borderColor: "#c92323",
+  
+  // Voice Button
+  voiceButton: {
+    position: 'absolute',
+    right: 20,
+    bottom: 80,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#4a90a4',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 6,
   },
-  rectangleView: {
-    left: 215,
-    borderColor: "rgba(0, 0, 0, 0.2)",
-    backgroundColor: "#fff",
-  },
-  transactionDetails: {
-    left: 59,
-    color: "#c92323",
-  },
-  partyDetails: {
-    left: 263,
-    opacity: 0.5,
-    color: "#000",
-    top: 97,
-  },
-  addTxn: {
-    top: 264,
-    opacity: 0.7,
-    fontSize: 13,
-    textAlign: "left",
-    fontFamily: "Inter-Medium",
-    fontWeight: "500",
-    position: "absolute",
-    left: 47,
-  },
-  saleReport: {
-    left: 125,
-    top: 264,
-    opacity: 0.7,
-    fontSize: 13,
-    textAlign: "left",
-    fontFamily: "Inter-Medium",
-    fontWeight: "500",
-    position: "absolute",
-  },
-  txnSettings: {
-    left: 222,
-    top: 264,
-    opacity: 0.7,
-    fontSize: 13,
-    textAlign: "left",
-    fontFamily: "Inter-Medium",
-    fontWeight: "500",
-    position: "absolute",
-  },
-  showAll: {
-    top: 264,
-    opacity: 0.7,
-    fontSize: 13,
-    textAlign: "left",
-    fontFamily: "Inter-Medium",
-    fontWeight: "500",
-    position: "absolute",
-    left: 317,
-  },
-  child4: {
-    top: 836,
-    height: 81,
-  },
-  home: {
-    left: 36,
-    color: "#2576e0",
-    top: 891,
-    fontWeight: "600",
-    lineHeight: 18,
-    position: "absolute",
-  },
-  dashboard: {
-    fontFamily: "Inter-SemiBold",
-    fontWeight: "600",
-    lineHeight: 18,
-    fontSize: 15,
-    textAlign: "left",
-    top: 891,
-    opacity: 0.7,
-    color: "#000",
-  },
-  items: {
-    left: 252,
-    top: 891,
-    fontWeight: "600",
-    lineHeight: 18,
-    opacity: 0.7,
-    color: "#000",
-    position: "absolute",
-  },
-  menu: {
-    left: 336,
-    top: 891,
-    fontWeight: "600",
-    lineHeight: 18,
-    opacity: 0.7,
-    color: "#000",
-    position: "absolute",
-  },
-  child9: {
-    top: 771,
-    backgroundColor: "#c92323",
-    width: 196,
-    height: 59,
-    borderRadius: 30,
-    left: 118,
-  },
-  addNewSale: {
-    top: 792,
-    left: 162,
-    color: "#fff",
-    position: "absolute",
-  },
+  
+  // Bottom Navigation
+  
 });
 
-export default Transaction;
+export default TransactionPage;
