@@ -27,7 +27,7 @@ export default function ResetPasswordPage() {
         if (res.ok) {
           setTokenValid(true);
         } else if (res.status === 410 || res.status === 400) {
-          router.replace('/Authentication/reset-expired');
+          router.replace('../Authentication/reset-expired');
           return;
         } else {
           const text = await res.text();
@@ -58,7 +58,7 @@ export default function ResetPasswordPage() {
       if (!res.ok) {
         if (res.status === 410 || res.status === 400) {
           // Token expired -> navigate to expired page
-          router.replace('/Authentication/reset-expired');
+          router.replace('../Authentication/reset-expired');
           return;
         }
         const text = await res.text();
@@ -66,7 +66,7 @@ export default function ResetPasswordPage() {
       }
 
       Alert.alert('Success', 'Your password has been reset successfully.', [
-        { text: 'OK', onPress: () => router.replace('/Authentication/LogIn') },
+        { text: 'OK', onPress: () => router.replace('../Authentication/LogIn') },
       ]);
     } catch (err: any) {
       Alert.alert('Error', err?.message || 'Unable to reset password.');
@@ -112,7 +112,7 @@ export default function ResetPasswordPage() {
       )}
       <ConfirmPassword
         visible={true}
-        onClose={() => router.replace('/Authentication/LogIn')}
+        onClose={() => router.replace('../Authentication/LogIn')}
         onConfirm={handleConfirm}
       />
     </View>

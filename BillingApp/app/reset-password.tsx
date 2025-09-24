@@ -20,7 +20,7 @@ export default function ResetPasswordAlias() {
   return (
     <Redirect
       href={{
-        pathname: '/Authentication/reset-password',
+        pathname: '/reset-password',
         params: typeof token === 'string' && token ? { token } : undefined,
       }}
     />
