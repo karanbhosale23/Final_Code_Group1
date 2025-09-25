@@ -4,7 +4,7 @@ import { useLocalSearchParams, useRouter, useRootNavigationState } from 'expo-ro
 import ConfirmPassword from './ConfirmPassword';
 import { BASE_URL } from '../config/api';
 
-export default function ResetPasswordPage() {
+export default function ResetPasswordScreen() {
   const { token } = useLocalSearchParams<{ token?: string }>();
   const router = useRouter();
   const rootNavigationState = useRootNavigationState();
@@ -47,27 +47,63 @@ export default function ResetPasswordPage() {
       Alert.alert('Invalid Link', 'Reset token is missing or invalid.');
       return;
     }
+    
+    // Validate password meets requirements
+    const passwordRules = [
+      { test: (v: string) => v.length >= 8, message: 'Password must be at least 8 characters' },
+      { test: (v: string) => /[A-Z]/.test(v), message: 'Password must contain at least one uppercase letter' },
+      { test: (v: string) => /[a-z]/.test(v), message: 'Password must contain at least one lowercase letter' },
+      { test: (v: string) => /[0-9]/.test(v), message: 'Password must contain at least one number' },
+      { test: (v: string) => /[^A-Za-z0-9]/.test(v), message: 'Password must contain at least one special character' },
+    ];
+
+    const failedRule = passwordRules.find(rule => !rule.test(newPassword));
+    if (failedRule) {
+      Alert.alert('Invalid Password', failedRule.message);
+      return;
+    }
+
     setSubmitting(true);
     try {
+      console.log('Sending reset password request...');
       const res = await fetch(`${BASE_URL}/api/v1/auth/reset-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token: resetToken, newPassword }),
       });
 
+      const responseData = await res.json().catch(() => ({}));
+      
       if (!res.ok) {
         if (res.status === 410 || res.status === 400) {
           // Token expired -> navigate to expired page
+          console.log('Token expired, redirecting to expired page');
           router.replace('../Authentication/reset-expired');
           return;
         }
-        const text = await res.text();
-        throw new Error(text || `Failed with status ${res.status}`);
+        throw new Error(responseData.message || `Failed with status ${res.status}`);
       }
 
-      Alert.alert('Success', 'Your password has been reset successfully.', [
-        { text: 'OK', onPress: () => router.replace('../Authentication/LogIn') },
-      ]);
+      console.log('Password reset successful');
+      
+      // Show success message and then navigate
+      Alert.alert(
+        'Success', 
+        'Your password has been reset successfully. You will be redirected to login.',
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              console.log('Navigating to login page');
+              router.replace({
+                pathname: '/Authentication/LogIn',
+                params: { passwordReset: 'true' }
+              });
+            }
+          }
+        ],
+        { cancelable: false }
+      );
     } catch (err: any) {
       Alert.alert('Error', err?.message || 'Unable to reset password.');
     } finally {
@@ -112,7 +148,10 @@ export default function ResetPasswordPage() {
       )}
       <ConfirmPassword
         visible={true}
-        onClose={() => router.replace('../Authentication/LogIn')}
+        onClose={() => router.replace({
+          pathname: '/Authentication/LogIn',
+          params: { fromReset: 'true' }
+        })}
         onConfirm={handleConfirm}
       />
     </View>

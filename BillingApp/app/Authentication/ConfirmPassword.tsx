@@ -43,25 +43,32 @@ const ConfirmPassword: React.FC<ConfirmPasswordProps> = ({ visible, onClose, onC
   };
 
   const handleConfirm = () => {
+    // Basic validation
     if (!newPassword || !confirmPassword) {
-      Alert.alert("Error", "Please fill both fields");
+      Alert.alert("Error", "Please fill both password fields");
       return;
     }
+    
+    // Check if passwords match
     if (newPassword !== confirmPassword) {
-      Alert.alert("Error", "Passwords do not match");
+      Alert.alert("Error", "Passwords do not match. Please make sure both passwords are the same.");
       return;
     }
+    
+    // Validate password strength
     if (!validatePassword(newPassword)) {
       setShowRules(true);
-      Alert.alert("Error", "Password does not meet the rules");
+      Alert.alert("Password Requirements", "Please ensure your password meets all the requirements listed below.");
       return;
     }
-    onConfirm(newPassword);
-    Alert.alert("Success", "Password changed successfully!");
+    
+    // Clear the form
     setNewPassword("");
     setConfirmPassword("");
     setShowRules(false);
-    onClose();
+    
+    // Call the parent's onConfirm handler with the new password
+    onConfirm(newPassword);
   };
 
   return (
