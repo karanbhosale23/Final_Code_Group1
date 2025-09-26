@@ -4,28 +4,79 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from '@expo/vector-icons';
 import Footer from "../../components/App_Components/Footer";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { isAuthenticated, getUserData, removeToken, UserData } from "../../utils/auth";
 
 const TransactionPage = () => {
   const [activeTab, setActiveTab] = React.useState('transaction');
+  const [loading, setLoading] = React.useState(true);
+  const [userData, setUserData] = React.useState<UserData | null>(null);
   const { username } = useLocalSearchParams<{ username?: string }>();
   const displayName = Array.isArray(username) ? username[0] : username;
   const router = useRouter();
 
+  // Check authentication on component mount
+  React.useEffect(() => {
+    checkAuthAndLoadUser();
+  }, []);
+
+  const checkAuthAndLoadUser = async () => {
+    try {
+      const authenticated = await isAuthenticated();
+      if (!authenticated) {
+        // User is not authenticated, redirect to login
+        router.replace("../Authentication/LogIn");
+        return;
+      }
+
+      // Load user data
+      const user = await getUserData();
+      setUserData(user);
+    } catch (error) {
+      console.log("Auth check error:", error);
+      router.replace("../Authentication/LogIn");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await removeToken();
+      router.replace("../Authentication/LogIn");
+    } catch (error) {
+      console.log("Logout error:", error);
+    }
+  };
+
   const handleProfileNavigation = () => {
     router.push({
       pathname: "./Profile",
-      params: { username: displayName || 'User' }
+      params: { username: userData?.username || displayName || 'User' }
     });
   };
+
+  // Show loading screen while checking authentication
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+          <Text>Loading...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Home page</Text>
+        <Text style={styles.headerTitle}>Welcome, {userData?.username || 'User'}!</Text>
         <View style={styles.headerIcons}>
           <Ionicons name="code-slash" size={20} color="#fff" />
           <Ionicons name="settings-outline" size={20} color="#fff" />
+          <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+            <Ionicons name="log-out-outline" size={20} color="#fff" />
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -140,6 +191,9 @@ const styles = StyleSheet.create({
   headerIcons: {
     flexDirection: 'row',
     gap: 15,
+  },
+  logoutButton: {
+    marginLeft: 10,
   },
   
   // User Section

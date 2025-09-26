@@ -1,5 +1,5 @@
 import ForgetPass from "../Authentication/ForgetPass";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
 import {
   Text,
@@ -13,7 +13,8 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Constants from "expo-constants";
-import Ionicons from "@expo/vector-icons/Ionicons"; // 👈 Eye icon for password visibility
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { storeToken, storeUserData, isAuthenticated, UserData } from "../../utils/auth";
 
 const getApiBase = () => {
   const debuggerHost =
@@ -30,8 +31,40 @@ const LogIn = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(true);
   const API_BASE = getApiBase();
   const router = useRouter();
+
+  // Check if user is already authenticated on component mount
+  useEffect(() => {
+    checkAuthStatus();
+  }, []);
+
+  const checkAuthStatus = async () => {
+    try {
+      const authenticated = await isAuthenticated();
+      if (authenticated) {
+        // User is already logged in, redirect to Transaction page
+        router.replace("../User_Dashboard/Transaction");
+        return;
+      }
+    } catch (error) {
+      console.log("Auth check error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Show loading screen while checking authentication
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+          <Text>Loading...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   const handleLogin = async () => {
     if (!username || !password) {
@@ -57,12 +90,30 @@ const LogIn = () => {
 
       if (response.ok) {
         const data = await response.json();
-        Alert.alert("Welcome", `Hello, ${username.trim()}!`);
-        console.log("Login successful!", data);
-        router.push({
-          pathname: "../User_Dashboard/Transaction",
-          params: { username: username.trim() },
-        });
+        
+        // Store JWT token and user data
+        if (data.token) {
+          await storeToken(data.token);
+          
+          // Store user data if available
+          const userData: UserData = {
+            id: data.id || 0,
+            username: data.username || username.trim(),
+            email: data.email || "",
+            phoneNumber: data.phoneNumber || "",
+            businessName: data.businessName || "",
+            role: data.role || "MERCHANT"
+          };
+          await storeUserData(userData);
+          
+          Alert.alert("Welcome", `Hello, ${username.trim()}!`);
+          console.log("Login successful! Token stored:", data.token);
+          
+          // Navigate to Transaction page
+          router.replace("../User_Dashboard/Transaction");
+        } else {
+          Alert.alert("Error", "No authentication token received");
+        }
       } else {
         // ✅ Custom error handling
         if (response.status === 401) {
