@@ -84,7 +84,7 @@ const TransactionPage = () => {
       <View style={styles.userSection}>
         <TouchableOpacity style={styles.userInfo} onPress={handleProfileNavigation}>
           <Ionicons name="person-circle-outline" size={22} color="#000" />
-          <Text style={styles.userName}>{displayName || 'User'}</Text>
+          <Text style={styles.userName}>{userData?.username || 'User'}</Text>
         </TouchableOpacity>
         <View style={styles.userIcons}>
           <Ionicons name="notifications-outline" size={22} color="#000" />
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#c6040a',
     paddingHorizontal: 20,
     paddingVertical: 15,
     paddingTop: 40,
