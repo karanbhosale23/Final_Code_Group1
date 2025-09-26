@@ -57,7 +57,7 @@ const SignUp: React.FC = () => {
       if (response.ok) {
         const msg = await response.text();
         Alert.alert("Success", msg || "Registration completed!");
-        router.push({ pathname: "../(tabs)/Transaction", params: { username: username.trim() } });
+        router.push({ pathname: "../User_Dashboard/Transaction", params: { username: username.trim() } });
       } else {
         const errorText = await response.text();
         Alert.alert("Error", `Status ${response.status}: ${errorText}`);
