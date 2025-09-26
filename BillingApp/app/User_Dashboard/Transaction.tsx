@@ -5,12 +5,6 @@ import { Ionicons } from '@expo/vector-icons';
 import Footer from "../../components/App_Components/Footer";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { isAuthenticated, getUserData, removeToken, UserData } from "../../utils/auth";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { useNavigation } from "@react-navigation/native";
-
-import type { RootStackParamList } from './_layout';
-
-type transactionScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const TransactionPage = () => {
   
@@ -20,7 +14,6 @@ const TransactionPage = () => {
   const { username } = useLocalSearchParams<{ username?: string }>();
   const displayName = Array.isArray(username) ? username[0] : username;
   const router = useRouter();
-  const navigation = useNavigation<transactionScreenNavigationProp>();
 
   // Check authentication on component mount
   React.useEffect(() => {
@@ -32,7 +25,7 @@ const TransactionPage = () => {
       const authenticated = await isAuthenticated();
       if (!authenticated) {
         // User is not authenticated, redirect to login
-        router.replace("../Authentication/LogIn");
+        router.replace("/Authentication/LogIn");
         return;
       }
 
@@ -41,7 +34,7 @@ const TransactionPage = () => {
       setUserData(user);
     } catch (error) {
       console.log("Auth check error:", error);
-      router.replace("../Authentication/LogIn");
+      router.replace("/Authentication/LogIn");
     } finally {
       setLoading(false);
     }
@@ -50,7 +43,7 @@ const TransactionPage = () => {
   const handleLogout = async () => {
     try {
       await removeToken();
-      router.replace("../Authentication/LogIn");
+      router.replace("/Authentication/LogIn");
     } catch (error) {
       console.log("Logout error:", error);
     }
@@ -129,13 +122,6 @@ const TransactionPage = () => {
               <Ionicons name="add-circle" size={24} color="#c6040a" />
             </View>
             <Text style={styles.quickLinkText}>Add Txn</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity style={styles.quickLinkItem} onPress={() => navigation.navigate('saleReport')}>
-            <View style={styles.quickLinkIcon}>
-              <Ionicons name="bar-chart" size={24} color="#4a90a4" />
-            </View>
-            <Text style={styles.quickLinkText}>Sale Report</Text>
           </TouchableOpacity>
           
           <TouchableOpacity style={styles.quickLinkItem}>

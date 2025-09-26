@@ -45,7 +45,7 @@ const LogIn = () => {
       const authenticated = await isAuthenticated();
       if (authenticated) {
         // User is already logged in, redirect to Transaction page
-        router.replace("../User_Dashboard/Transaction");
+        router.replace("/User_Dashboard/Transaction");
         return;
       }
     } catch (error) {
@@ -74,7 +74,7 @@ const LogIn = () => {
 
     if (username.trim() === "admin" && password.trim() === "adminpassword") {
       Alert.alert("Admin Login", "Welcome, Admin!");
-      router.push("../User_Dashboard/AdminPage");
+      router.push("/User_Dashboard/AdminPage");
       return;
     }
 
@@ -110,7 +110,7 @@ const LogIn = () => {
           console.log("Login successful! Token stored:", data.token);
           
           // Navigate to Transaction page
-          router.replace("../User_Dashboard/Transaction");
+          router.replace("/User_Dashboard/Transaction");
         } else {
           Alert.alert("Error", "No authentication token received");
         }
@@ -188,7 +188,7 @@ const LogIn = () => {
 
           <View style={styles.signUpContainer}>
             <Text style={styles.noAccountText}>Don&apos;t have an account? </Text>
-            <TouchableOpacity onPress={() => router.push("../Authentication/SignUp")}>
+            <TouchableOpacity onPress={() => router.push("/Authentication/SignUp")}>
               <Text style={styles.signUpText}>Sign Up</Text>
             </TouchableOpacity>
           </View>

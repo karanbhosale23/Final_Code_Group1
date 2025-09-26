@@ -1,10 +1,9 @@
-
 import React, { useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { View, Text } from 'react-native';
-import { isAuthenticated } from '../../utils/auth';
+import { isAuthenticated } from '../utils/auth';
 
-export default function TabIndex() {
+export default function Index() {
   const router = useRouter();
 
   useEffect(() => {

@@ -41,15 +41,6 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="SaleReport"
-        options={{
-          title: 'Sales',
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="dollarsign.circle.fill" color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="Profile"
         options={{
           title: 'Profile',

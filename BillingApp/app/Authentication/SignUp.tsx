@@ -64,7 +64,7 @@ const SignUp = () => {
       const authenticated = await isAuthenticated();
       if (authenticated) {
         // User is already logged in, redirect to Transaction page
-        router.replace("../User_Dashboard/Transaction");
+        router.replace("/User_Dashboard/Transaction");
         return;
       }
     } catch (error) {
@@ -132,12 +132,12 @@ const SignUp = () => {
           console.log("Signup successful! Token stored:", data.token);
           
           // Navigate to Transaction page
-          router.replace("../User_Dashboard/Transaction");
+          router.replace("/User_Dashboard/Transaction");
         } else {
           // If no token, just show success message and go to login
           const msg = typeof data === 'string' ? data : (data.message || "Registration completed!");
           Alert.alert("Success", msg);
-          router.push("../Authentication/LogIn");
+          router.push("/Authentication/LogIn");
         }
       } else {
         const errorText = await response.text();
@@ -256,7 +256,7 @@ const SignUp = () => {
             {/* Login Link */}
             <View style={styles.loginContainer}>
               <Text style={styles.loginText}>Already have an account? </Text>
-              <TouchableOpacity onPress={() => router.push("../Authentication/LogIn")}>
+              <TouchableOpacity onPress={() => router.push("/Authentication/LogIn")}>
                 <Text style={styles.loginLink}>Login</Text>
               </TouchableOpacity>
             </View>
