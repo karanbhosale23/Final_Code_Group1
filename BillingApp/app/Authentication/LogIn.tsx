@@ -152,14 +152,9 @@ const LogIn = () => {
           />
 
           {/* Password input with Eye Icon */}
-          <View
-            style={[
-              styles.input,
-              { flexDirection: "row", alignItems: "center", paddingHorizontal: 10 },
-            ]}
-          >
+          <View style={styles.passwordContainer}>
             <TextInput
-              style={{ flex: 1, height: 45 }}
+              style={styles.passwordInput}
               placeholder="Password"
               value={password}
               onChangeText={setPassword}
@@ -192,7 +187,7 @@ const LogIn = () => {
           </TouchableOpacity>
 
           <View style={styles.signUpContainer}>
-            <Text style={styles.noAccountText}>Don't have an account? </Text>
+            <Text style={styles.noAccountText}>Don&apos;t have an account? </Text>
             <TouchableOpacity onPress={() => router.push("../Authentication/SignUp")}>
               <Text style={styles.signUpText}>Sign Up</Text>
             </TouchableOpacity>
@@ -249,6 +244,21 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     paddingHorizontal: 10,
     marginBottom: 15,
+  },
+  passwordContainer: {
+    height: 45,
+    borderWidth: 1,
+    borderColor: "#c6040a",
+    borderRadius: 6,
+    marginBottom: 15,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingRight: 10,
+  },
+  passwordInput: {
+    flex: 1,
+    height: '100%',
+    paddingHorizontal: 10,
   },
   eyeIcon: {
     padding: 5,

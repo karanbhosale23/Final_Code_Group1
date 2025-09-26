@@ -1,31 +1,49 @@
-import React from 'react';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
 
-import { useColorScheme } from '@/hooks/useColorScheme';
+// import Items from '../Inventory/items';
+// import Add_items from '../Inventory/add_items';
 
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    // Use a relative path and forward slashes. From app/User_Dashboard/_layout.tsx to assets/fonts
-    SpaceMono: require('../../assets/fonts/SpaceMono-Regular.ttf'),
-  });
 
-  if (!loaded) {
-    // Async font loading only occurs in development.
-    return null;
-  }
+// export default function HomeScreen() {
+//   return (
+//     <Items />
+//     // <Add_items />
+//   );
+// }
 
+import * as React from 'react';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { Text, View } from 'react-native';
+import SaleReport from '../SaleReport/Components/SaleReportMain';
+import TabsLayout from '../(tabs)/index';
+
+// Define all possible screen names and their parameters
+export type RootStackParamList = {
+  saleReport: undefined;
+  '(tabs)': undefined;
+  '+not-found': undefined;
+};
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
+
+// Simple not found component
+function NotFoundScreen() {
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <Text>Page not found</Text>
+    </View>
+  );
+}
+
+export default function TabUserDashboard() {
+  return (
+    <Stack.Navigator 
+      screenOptions={{
+        headerShown: false
+      }}
+    >
+      <Stack.Screen name="saleReport" component={SaleReport} />
+      <Stack.Screen name="(tabs)" component={TabsLayout} options={{ headerShown: false }} />
+      <Stack.Screen name="+not-found" component={NotFoundScreen} />
+    </Stack.Navigator>
   );
 }

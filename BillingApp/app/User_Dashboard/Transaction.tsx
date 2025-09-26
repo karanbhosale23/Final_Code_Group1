@@ -5,14 +5,22 @@ import { Ionicons } from '@expo/vector-icons';
 import Footer from "../../components/App_Components/Footer";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { isAuthenticated, getUserData, removeToken, UserData } from "../../utils/auth";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { useNavigation } from "@react-navigation/native";
+
+import type { RootStackParamList } from './_layout';
+
+type transactionScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const TransactionPage = () => {
+  
   const [activeTab, setActiveTab] = React.useState('transaction');
   const [loading, setLoading] = React.useState(true);
   const [userData, setUserData] = React.useState<UserData | null>(null);
   const { username } = useLocalSearchParams<{ username?: string }>();
   const displayName = Array.isArray(username) ? username[0] : username;
   const router = useRouter();
+  const navigation = useNavigation<transactionScreenNavigationProp>();
 
   // Check authentication on component mount
   React.useEffect(() => {
@@ -123,7 +131,7 @@ const TransactionPage = () => {
             <Text style={styles.quickLinkText}>Add Txn</Text>
           </TouchableOpacity>
           
-          <TouchableOpacity style={styles.quickLinkItem}>
+          <TouchableOpacity style={styles.quickLinkItem} onPress={() => navigation.navigate('saleReport')}>
             <View style={styles.quickLinkIcon}>
               <Ionicons name="bar-chart" size={24} color="#4a90a4" />
             </View>
