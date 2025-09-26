@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   Text,
   StyleSheet,
@@ -9,17 +9,26 @@ import {
   KeyboardAvoidingView,
   ScrollView,
   Platform,
+  Modal,
+  Pressable,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import Constants from "expo-constants";
+
+const passwordRules = [
+  { rule: "At least 8 characters", test: (v: string) => v.length >= 8 },
+  { rule: "At least 1 uppercase letter", test: (v: string) => /[A-Z]/.test(v) },
+  { rule: "At least 1 lowercase letter", test: (v: string) => /[a-z]/.test(v) },
+  { rule: "At least 1 number", test: (v: string) => /[0-9]/.test(v) },
+  { rule: "At least 1 special character (@$!%*?&)", test: (v: string) => /[^A-Za-z0-9]/.test(v) },
+];
 
 const getApiBase = () => {
   // This works in Expo Go and development mode
   const debuggerHost = Constants.manifest?.debuggerHost || Constants.expoConfig?.hostUri;
   if (debuggerHost) {
     const ip = debuggerHost.split(":")[0];
-    return `http://${ip}:8080/api/v1/auth`;
     }
   // Fallback for production or if not available
   return "http://localhost:8080/api/v1/auth";
@@ -32,10 +41,22 @@ const SignUp: React.FC = () => {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [business, setBusinessname] = useState("");
+  const [showPasswordRules, setShowPasswordRules] = useState(false);
+  const passwordInputRef = useRef<TextInput>(null);
+
+  const validatePassword = (pass: string) => {
+    return passwordRules.every(rule => rule.test(pass));
+  };
 
   const API_BASE = getApiBase();
 
   const handleSignUp = async () => {
+    if (!validatePassword(password)) {
+      setShowPasswordRules(true);
+      passwordInputRef.current?.focus();
+      return;
+    }
+
     if (!username || !email || !phone || !password || !business) {
       Alert.alert("Error", "Please fill all fields");
       return;
@@ -71,61 +92,141 @@ const SignUp: React.FC = () => {
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
-        style={{ flex: 1 }}
+        style={styles.keyboardAvoidView}
       >
-        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-          {/* Header */}
+        <ScrollView 
+          contentContainerStyle={styles.scrollView}
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* Header with Back Button */}
           <View style={styles.header}>
+            <TouchableOpacity 
+              style={styles.backButton}
+              onPress={() => router.back()}
+            >
+              <Text style={styles.backButtonText}>←</Text>
+            </TouchableOpacity>
             <Text style={styles.headerTitle}>Create Account</Text>
           </View>
 
-          {/* Form */}
-          <View style={styles.form}>
-            <TextInput
-              style={styles.input}
-              placeholder="Username"
-              value={username}
-              onChangeText={setUsername}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Email"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Phone Number"
-              value={phone}
-              onChangeText={setPhone}
-              keyboardType="phone-pad"
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Password"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Business Name"
-              value={business}
-              onChangeText={setBusinessname}
-            />
-            <TouchableOpacity style={styles.button} onPress={handleSignUp}>
-              <Text style={styles.buttonText}>Sign Up</Text>
+          {/* Main Form Container */}
+          <View style={styles.formContainer}>
+            {/* Form Inputs */}
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Username</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter your username"
+                value={username}
+                onChangeText={setUsername}
+                placeholderTextColor="#999"
+              />
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Email</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter your email"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                placeholderTextColor="#999"
+              />
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Phone Number</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="phone number"
+                value={phone}
+                onChangeText={setPhone}
+                keyboardType="phone-pad"
+                placeholderTextColor="#999"
+              />
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Password</Text>
+              <View>
+                <Pressable 
+                  onPress={() => {
+                    setShowPasswordRules(true);
+                    passwordInputRef.current?.focus();
+                  }}
+                >
+                  <TextInput
+                    ref={passwordInputRef}
+                    style={styles.input}
+                    placeholder="Create a strong password"
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry
+                    placeholderTextColor="#999"
+                    showSoftInputOnFocus={false}
+                  />
+                </Pressable>
+              </View>
+            </View>
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Business Name</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter your business name"
+                value={business}
+                onChangeText={setBusinessname}
+                placeholderTextColor="#999"
+              />
+            </View>
+
+            {/* Sign Up Button */}
+            <TouchableOpacity 
+              style={[styles.button, !(username && email && phone && password && business) && styles.buttonDisabled]} 
+              onPress={handleSignUp}
+              disabled={!(username && email && phone && password && business)}
+            >
+              <Text style={styles.buttonText}>Create Account</Text>
             </TouchableOpacity>
 
-            {/* Back to login */}
-            <TouchableOpacity onPress={() => router.push("../Authentication/LogIn")}> 
-              <Text style={styles.loginText}>Already have an account? Login</Text>
-            </TouchableOpacity>
+            {/* Login Link */}
+            <View style={styles.loginContainer}>
+              <Text style={styles.loginText}>Already have an account? </Text>
+              <TouchableOpacity onPress={() => router.push("../Authentication/LogIn")}>
+                <Text style={styles.loginLink}>Login</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* Password Rules Modal */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={showPasswordRules}
+        onRequestClose={() => setShowPasswordRules(false)}
+      >
+        <Pressable 
+          style={styles.modalOverlay}
+          onPress={() => setShowPasswordRules(false)}
+        >
+          <View style={styles.modalContent} onStartShouldSetResponder={() => true}>
+            <Text style={styles.modalTitle}>Password Requirements</Text>
+            {passwordRules.map((rule, index) => (
+              <View key={index} style={styles.ruleItem}>
+                <Text style={[
+                  styles.ruleText,
+                  rule.test(password) ? styles.ruleSatisfied : styles.ruleNotSatisfied
+                ]}>
+                  {rule.test(password) ? '✓ ' : '• '}{rule.rule}
+                </Text>
+              </View>
+            ))}
+          </View>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -133,50 +234,146 @@ const SignUp: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#e9f5ff",
+    backgroundColor: '#fff',
+  },
+  keyboardAvoidView: {
+    flex: 1,
+  },
+  scrollView: {
+    flexGrow: 1,
+    paddingBottom: 30,
   },
   header: {
-    height: 85,
-    backgroundColor: "#2576e0",
-    justifyContent: "center",
-    alignItems: "center",
+    height: 60,
+    backgroundColor: '#c6040a',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 15,
+    position: 'relative',
+  },
+  backButton: {
+    position: 'absolute',
+    left: 15,
+    padding: 10,
+  },
+  backButtonText: {
+    color: '#fff',
+    fontSize: 24,
+    lineHeight: 24,
   },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#fff",
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#fff',
   },
-  form: {
-    marginTop: 40,
-    paddingHorizontal: 30,
+  formContainer: {
+    flex: 1,
+    padding: 25,
+    paddingTop: 30,
+  },
+  inputContainer: {
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 14,
+    color: '#333',
+    marginBottom: 8,
+    fontWeight: '500',
   },
   input: {
-    height: 45,
-    borderColor: "#2576e0",
+    height: 50,
     borderWidth: 1,
-    borderRadius: 6,
-    paddingHorizontal: 10,
-    marginBottom: 15,
-    backgroundColor: "#fff",
+    borderColor: '#ddd',
+    borderRadius: 8,
+    paddingHorizontal: 15,
+    fontSize: 15,
+    backgroundColor: '#fff',
+    color: '#333',
   },
   button: {
-    height: 45,
-    backgroundColor: "#2576e0",
-    borderRadius: 6,
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 10,
+    height: 52,
+    backgroundColor: '#c6040a',
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 20,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  buttonDisabled: {
+    opacity: 0.6,
   },
   buttonText: {
-    color: "#fff",
+    color: '#fff',
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: '600',
+  },
+  loginContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 25,
   },
   loginText: {
-    marginTop: 15,
-    textAlign: "center",
-    color: "#2576e0",
-    fontWeight: "600",
+    color: '#666',
+    fontSize: 14,
+  },
+  loginLink: {
+    color: '#c6040a',
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 5,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 20,
+    width: '85%',
+    maxWidth: 400,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    color: '#333',
+    textAlign: 'center',
+  },
+  ruleItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  ruleText: {
+    fontSize: 14,
+    color: '#666',
+  },
+  ruleSatisfied: {
+    color: '#4CAF50',
+    fontWeight: '500',
+  },
+  ruleNotSatisfied: {
+    color: '#666',
+  },
+  closeButton: {
+    marginTop: 20,
+    backgroundColor: '#c6040a',
+    borderRadius: 6,
+    padding: 12,
+    alignItems: 'center',
+  },
+  closeButtonText: {
+    color: 'white',
+    fontWeight: '600',
+    fontSize: 16,
   },
 });
 
