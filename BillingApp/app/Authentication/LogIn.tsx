@@ -121,7 +121,7 @@ const LogIn = () => {
               <Ionicons
                 name={showPassword ? "eye-off" : "eye"}
                 size={20}
-                color="#2576e0"
+                color="#c6040a"
               />
             </TouchableOpacity>
           </View>
@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
   },
   header: {
     height: 85,
-    backgroundColor: "#2576e0",
+    backgroundColor: "#c6040a",
     justifyContent: "center",
     alignItems: "center",
     shadowColor: "#000",
@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
   input: {
     height: 45,
     borderWidth: 1,
-    borderColor: "#2576e0",
+    borderColor: "#c6040a",
     borderRadius: 6,
     paddingHorizontal: 10,
     marginBottom: 15,
@@ -209,12 +209,12 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   forgotPassword: {
-    color: "#2576e0",
+    color: "#c6040a",
     fontSize: 12,
   },
   loginButton: {
     height: 45,
-    backgroundColor: "#2576e0",
+    backgroundColor: "#c6040a",
     borderRadius: 6,
     justifyContent: "center",
     alignItems: "center",
@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
   },
   signUpText: {
     fontSize: 12,
-    color: "#2576e0",
+    color: "#c6040a",
     fontWeight: "500",
   },
 });
