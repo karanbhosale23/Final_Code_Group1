@@ -11,6 +11,7 @@ import {
   Platform,
   Modal,
   Pressable,
+  StatusBar
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -29,8 +30,14 @@ const getApiBase = () => {
   // This works in Expo Go and development mode
   const debuggerHost = Constants.manifest?.debuggerHost || Constants.expoConfig?.hostUri;
   if (debuggerHost) {
+<<<<<<< HEAD
     const ip = debuggerHost.split(":")[0];
     return `http://${ip}:8080/api/v1/auth`;
+=======
+    // IP handling if needed in the future
+    const _ip = debuggerHost.split(":")[0];
+    console.log('Debugger host IP:', _ip);
+>>>>>>> bceea9fd547db59ac201713326956156935d41f6
   }
   // Fallback for production or if not available
   return "http://localhost:8080/api/v1/auth";
@@ -142,20 +149,23 @@ const SignUp = () => {
         const errorText = await response.text();
         Alert.alert("Error", `Status ${response.status}: ${errorText}`);
       }
-    } catch (err) {
+    } catch (error) {
+      console.error('Signup error:', error);
       Alert.alert("Error", "Could not connect to backend");
     }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={styles.keyboardAvoidView}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
       >
         <ScrollView 
-          contentContainerStyle={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
           {/* Header with Back Button */}
           <View style={styles.header}>
@@ -259,6 +269,7 @@ const SignUp = () => {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+      <StatusBar barStyle="dark-content" backgroundColor="#c6040a" />
 
       {/* Password Rules Modal */}
       <Modal
@@ -283,6 +294,12 @@ const SignUp = () => {
                 </Text>
               </View>
             ))}
+            <TouchableOpacity 
+              style={styles.okButton}
+              onPress={() => setShowPasswordRules(false)}
+            >
+              <Text style={styles.okButtonText}>OK</Text>
+            </TouchableOpacity>
           </View>
         </Pressable>
       </Modal>
@@ -299,8 +316,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
     flexGrow: 1,
-    paddingBottom: 30,
+    paddingBottom: 40,
   },
   header: {
     height: 60,
@@ -328,8 +348,11 @@ const styles = StyleSheet.create({
   },
   formContainer: {
     flex: 1,
-    padding: 25,
-    paddingTop: 30,
+    padding: 20,
+    paddingTop: 20,
+    maxWidth: 500,
+    width: '100%',
+    alignSelf: 'center',
   },
   inputContainer: {
     marginBottom: 20,
@@ -349,6 +372,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     backgroundColor: '#fff',
     color: '#333',
+    width: '100%',
   },
   button: {
     height: 52,
@@ -356,12 +380,14 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: 25,
+    marginBottom: 10,
     elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
+    width: '100%',
   },
   buttonDisabled: {
     opacity: 0.6,
@@ -395,9 +421,10 @@ const styles = StyleSheet.create({
   modalContent: {
     backgroundColor: 'white',
     borderRadius: 12,
-    padding: 20,
-    width: '85%',
+    padding: 24,
+    width: '90%',
     maxWidth: 400,
+    marginHorizontal: 20,
   },
   modalTitle: {
     fontSize: 18,
@@ -430,6 +457,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   closeButtonText: {
+    color: 'white',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  okButton: {
+    marginTop: 20,
+    backgroundColor: '#c6040a',
+    borderRadius: 6,
+    padding: 12,
+    alignItems: 'center',
+    width: '100%',
+  },
+  okButtonText: {
     color: 'white',
     fontWeight: '600',
     fontSize: 16,
