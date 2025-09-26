@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Text,
   StyleSheet,
@@ -15,6 +15,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import Constants from "expo-constants";
+import { storeToken, storeUserData, isAuthenticated, UserData } from "../../utils/auth";
 
 const passwordRules = [
   { rule: "At least 8 characters", test: (v: string) => v.length >= 8 },
@@ -29,12 +30,13 @@ const getApiBase = () => {
   const debuggerHost = Constants.manifest?.debuggerHost || Constants.expoConfig?.hostUri;
   if (debuggerHost) {
     const ip = debuggerHost.split(":")[0];
-    }
+    return `http://${ip}:8080/api/v1/auth`;
+  }
   // Fallback for production or if not available
   return "http://localhost:8080/api/v1/auth";
 };
 
-const SignUp: React.FC = () => {
+const SignUp = () => {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -42,6 +44,7 @@ const SignUp: React.FC = () => {
   const [password, setPassword] = useState("");
   const [business, setBusinessname] = useState("");
   const [showPasswordRules, setShowPasswordRules] = useState(false);
+  const [loading, setLoading] = useState(true);
   const passwordInputRef = useRef<TextInput>(null);
 
   const validatePassword = (pass: string) => {
@@ -49,6 +52,37 @@ const SignUp: React.FC = () => {
   };
 
   const API_BASE = getApiBase();
+
+  // Check if user is already authenticated on component mount
+  useEffect(() => {
+    checkAuthStatus();
+  }, []);
+
+  const checkAuthStatus = async () => {
+    try {
+      const authenticated = await isAuthenticated();
+      if (authenticated) {
+        // User is already logged in, redirect to Transaction page
+        router.replace("../User_Dashboard/Transaction");
+        return;
+      }
+    } catch (error) {
+      console.log("Auth check error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Show loading screen while checking authentication
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]} >
+          <Text>Loading...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   const handleSignUp = async () => {
     if (!validatePassword(password)) {
@@ -76,9 +110,34 @@ const SignUp: React.FC = () => {
       });
 
       if (response.ok) {
-        const msg = await response.text();
-        Alert.alert("Success", msg || "Registration completed!");
-        router.push({ pathname: "../User_Dashboard/Transaction", params: { username: username.trim() } });
+        const data = await response.json();
+        
+        // Check if we got a token (auto-login after signup)
+        if (data.token) {
+          // Store JWT token and user data
+          await storeToken(data.token);
+          
+          const userData: UserData = {
+            id: data.id || 0,
+            username: data.username || username.trim(),
+            email: data.email || email.trim(),
+            phoneNumber: data.phoneNumber || phone.trim(),
+            businessName: data.businessName || business.trim(),
+            role: data.role || "MERCHANT"
+          };
+          await storeUserData(userData);
+          
+          Alert.alert("Success", "Registration completed! Welcome!");
+          console.log("Signup successful! Token stored:", data.token);
+          
+          // Navigate to Transaction page
+          router.replace("../User_Dashboard/Transaction");
+        } else {
+          // If no token, just show success message and go to login
+          const msg = typeof data === 'string' ? data : (data.message || "Registration completed!");
+          Alert.alert("Success", msg);
+          router.push("../Authentication/LogIn");
+        }
       } else {
         const errorText = await response.text();
         Alert.alert("Error", `Status ${response.status}: ${errorText}`);
