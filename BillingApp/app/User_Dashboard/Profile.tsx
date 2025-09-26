@@ -3,6 +3,8 @@ import { StyleSheet, View, Text, ScrollView, TextInput, TouchableOpacity, Alert,
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, router } from "expo-router";
 import Constants from "expo-constants";
+import { getUserData, authenticatedFetch, UserData } from "../../utils/auth";
+import ProtectedRoute from "../../components/Auth/ProtectedRoute";
 
 const getApiBase = () => {
   const debuggerHost = Constants.manifest?.debuggerHost || Constants.expoConfig?.hostUri;
@@ -42,8 +44,24 @@ const Profile = () => {
 
   // Load user and profile data on component mount
   React.useEffect(() => {
+    loadUserDataFromStorage();
     loadUserData();
   }, []);
+
+  const loadUserDataFromStorage = async () => {
+    try {
+      const userData = await getUserData();
+      if (userData) {
+        setCurrentUsername(userData.username);
+        setUserEmail(userData.email);
+        setUserPhoneNumber(userData.phoneNumber);
+        setUserBusinessName(userData.businessName);
+        setUserId(userData.id);
+      }
+    } catch (error) {
+      console.log("Error loading user data from storage:", error);
+    }
+  };
 
   const loadUserData = async () => {
     if (!displayName) return;
@@ -51,7 +69,7 @@ const Profile = () => {
     setLoading(true);
     try {
       // First, get user details from signup
-      const userResponse = await fetch(`${API_BASE}/auth/user/${displayName}`);
+      const userResponse = await authenticatedFetch(`${API_BASE}/auth/user/${displayName}`);
       
       if (userResponse.ok) {
         const userData = await userResponse.json();
@@ -64,7 +82,7 @@ const Profile = () => {
         
         // Now try to get merchant profile data
         if (userData.id) {
-          const profileResponse = await fetch(`${API_BASE}/merchant-profile/user/${userData.id}`);
+          const profileResponse = await authenticatedFetch(`${API_BASE}/merchant-profile/user/${userData.id}`);
           
           if (profileResponse.ok) {
             const profileData = await profileResponse.json();
@@ -141,16 +159,14 @@ const Profile = () => {
       let profileResponse;
       if (profileId) {
         // Update existing profile
-        profileResponse = await fetch(`${API_BASE}/merchant-profile/${profileId}`, {
+        profileResponse = await authenticatedFetch(`${API_BASE}/merchant-profile/${profileId}`, {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(profileData)
         });
       } else {
         // Create new profile
-        profileResponse = await fetch(`${API_BASE}/merchant-profile`, {
+        profileResponse = await authenticatedFetch(`${API_BASE}/merchant-profile`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(profileData)
         });
       }
@@ -744,4 +760,12 @@ const styles = StyleSheet.create({
   }
 });
 
-export default Profile;
+const ProtectedProfile = () => {
+  return (
+    <ProtectedRoute>
+      <Profile />
+    </ProtectedRoute>
+  );
+};
+
+export default ProtectedProfile;
