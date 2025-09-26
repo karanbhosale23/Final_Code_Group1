@@ -30,14 +30,8 @@ const getApiBase = () => {
   // This works in Expo Go and development mode
   const debuggerHost = Constants.manifest?.debuggerHost || Constants.expoConfig?.hostUri;
   if (debuggerHost) {
-<<<<<<< HEAD
     const ip = debuggerHost.split(":")[0];
     return `http://${ip}:8080/api/v1/auth`;
-=======
-    // IP handling if needed in the future
-    const _ip = debuggerHost.split(":")[0];
-    console.log('Debugger host IP:', _ip);
->>>>>>> bceea9fd547db59ac201713326956156935d41f6
   }
   // Fallback for production or if not available
   return "http://localhost:8080/api/v1/auth";
