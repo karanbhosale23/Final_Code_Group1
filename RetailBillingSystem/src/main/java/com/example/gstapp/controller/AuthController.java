@@ -3,6 +3,7 @@ package com.example.gstapp.controller;
 import com.example.gstapp.dto.AuthRequestDTO;
 import com.example.gstapp.dto.AuthResponseDTO;
 import com.example.gstapp.dto.RegisterRequestDTO;
+import com.example.gstapp.model.User;
 import com.example.gstapp.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -63,5 +64,31 @@ public class AuthController {
     public ResponseEntity<String> validateResetToken(@RequestParam("token") String token) {
         authService.validateResetToken(token);
         return ResponseEntity.ok("Token is valid");
+    }
+
+    // Get user details by username
+    // http://localhost:8080/api/v1/auth/user/{username}
+    @GetMapping("/user/{username}")
+    public ResponseEntity<?> getUserByUsername(@PathVariable String username) {
+        try {
+            User user = authService.getUserByUsername(username);
+            return ResponseEntity.ok(user);
+        } catch (UsernameNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
+    }
+
+    // Update user details
+    // http://localhost:8080/api/v1/auth/user/{username}
+    @PutMapping("/user/{username}")
+    public ResponseEntity<?> updateUser(@PathVariable String username, @RequestBody Map<String, String> updates) {
+        try {
+            User updatedUser = authService.updateUser(username, updates);
+            return ResponseEntity.ok(updatedUser);
+        } catch (UsernameNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        }
     }
 }

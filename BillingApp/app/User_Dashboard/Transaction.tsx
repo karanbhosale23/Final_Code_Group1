@@ -3,13 +3,21 @@ import {StyleSheet, View, Text, TouchableOpacity} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from '@expo/vector-icons';
 import Footer from "../../components/App_Components/Footer";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
 const TransactionPage = () => {
   const [activeTab, setActiveTab] = React.useState('transaction');
   const { username } = useLocalSearchParams<{ username?: string }>();
   const displayName = Array.isArray(username) ? username[0] : username;
-  
+  const router = useRouter();
+
+  const handleProfileNavigation = () => {
+    router.push({
+      pathname: "./Profile",
+      params: { username: displayName || 'User' }
+    });
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
@@ -23,10 +31,10 @@ const TransactionPage = () => {
 
       {/* User Section */}
       <View style={styles.userSection}>
-        <View style={styles.userInfo}>
+        <TouchableOpacity style={styles.userInfo} onPress={handleProfileNavigation}>
           <Ionicons name="person-circle-outline" size={22} color="#000" />
           <Text style={styles.userName}>{displayName || 'User'}</Text>
-        </View>
+        </TouchableOpacity>
         <View style={styles.userIcons}>
           <Ionicons name="notifications-outline" size={22} color="#000" />
           <Ionicons name="settings-outline" size={22} color="#000" />

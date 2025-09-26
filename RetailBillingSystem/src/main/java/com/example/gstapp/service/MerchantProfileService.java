@@ -34,5 +34,30 @@ public class MerchantProfileService {
         return profileRepository.findById(id);
     }
 
-    // Add update/delete/get-by-user methods as needed!
+    public MerchantProfile getProfileByUserId(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        
+        return profileRepository.findByUser(user)
+                .orElseThrow(() -> new IllegalArgumentException("Profile not found for user"));
+    }
+
+    public MerchantProfile updateProfile(Long profileId, MerchantProfile updatedProfile) {
+        MerchantProfile existingProfile = profileRepository.findById(profileId)
+                .orElseThrow(() -> new IllegalArgumentException("Profile not found"));
+
+        // Update fields
+        existingProfile.setGstin(updatedProfile.getGstin());
+        existingProfile.setPhoneNumber2(updatedProfile.getPhoneNumber2());
+        existingProfile.setPincode(updatedProfile.getPincode());
+        existingProfile.setBusinessDescription(updatedProfile.getBusinessDescription());
+        existingProfile.setBusinessAddress(updatedProfile.getBusinessAddress());
+        existingProfile.setSignatureBase64(updatedProfile.getSignatureBase64());
+        existingProfile.setSignatureUrl(updatedProfile.getSignatureUrl());
+        existingProfile.setState(updatedProfile.getState());
+        existingProfile.setBusinessType(updatedProfile.getBusinessType());
+        existingProfile.setBusinessCategory(updatedProfile.getBusinessCategory());
+
+        return profileRepository.save(existingProfile);
+    }
 }

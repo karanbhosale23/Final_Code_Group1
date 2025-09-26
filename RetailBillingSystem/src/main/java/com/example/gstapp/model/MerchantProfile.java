@@ -29,6 +29,9 @@ public class MerchantProfile implements Serializable {
     @Column(length = 1024)
     private String businessDescription;
 
+    @Column(name = "business_address", length = 512)
+    private String businessAddress;
+
     // Signature stored as Base64 string or URL (choose one)
     @Lob
     @Column(name = "signature_base64", columnDefinition = "TEXT")
@@ -52,13 +55,14 @@ public class MerchantProfile implements Serializable {
 
     // All-args constructor
     public MerchantProfile(User user, String gstin, String phoneNumber2, String pincode,
-            String businessDescription, String signatureBase64, String signatureUrl,
+            String businessDescription, String businessAddress, String signatureBase64, String signatureUrl,
             String state, String businessType, String businessCategory) {
         this.user = user;
         this.gstin = gstin;
         this.phoneNumber2 = phoneNumber2;
         this.pincode = pincode;
         this.businessDescription = businessDescription;
+        this.businessAddress = businessAddress;
         this.signatureBase64 = signatureBase64;
         this.signatureUrl = signatureUrl;
         this.state = state;
@@ -113,6 +117,14 @@ public class MerchantProfile implements Serializable {
 
     public void setBusinessDescription(String businessDescription) {
         this.businessDescription = businessDescription;
+    }
+
+    public String getBusinessAddress() {
+        return businessAddress;
+    }
+
+    public void setBusinessAddress(String businessAddress) {
+        this.businessAddress = businessAddress;
     }
 
     public String getSignatureBase64() {

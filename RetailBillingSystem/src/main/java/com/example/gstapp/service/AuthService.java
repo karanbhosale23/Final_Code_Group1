@@ -11,6 +11,7 @@ import com.example.gstapp.repository.PasswordResetTokenRepository;
 import com.example.gstapp.repository.UserRepository;
 import com.example.gstapp.util.JwtUtil;
 import java.util.UUID;
+import java.util.Map;
 import java.time.LocalDateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -164,6 +165,43 @@ public class AuthService {
         if (passwordResetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
             throw new IllegalArgumentException("Expired password reset token");
         }
+    }
+
+    // Get user by username
+    public User getUserByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
+    }
+
+    // Update user details
+    public User updateUser(String username, Map<String, String> updates) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
+
+        // Update allowed fields
+        if (updates.containsKey("email")) {
+            String newEmail = updates.get("email");
+            if (newEmail != null && !newEmail.trim().isEmpty()) {
+                // Check if email is already taken by another user
+                if (userRepository.findByEmail(newEmail).isPresent() && 
+                    !user.getEmail().equals(newEmail)) {
+                    throw new IllegalArgumentException("Email already exists");
+                }
+                user.setEmail(newEmail.trim());
+            }
+        }
+
+        if (updates.containsKey("phoneNumber")) {
+            String phoneNumber = updates.get("phoneNumber");
+            user.setPhoneNumber(phoneNumber != null ? phoneNumber.trim() : null);
+        }
+
+        if (updates.containsKey("businessName")) {
+            String businessName = updates.get("businessName");
+            user.setBusinessName(businessName != null ? businessName.trim() : null);
+        }
+
+        return userRepository.save(user);
     }
 
 }

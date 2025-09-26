@@ -51,7 +51,14 @@ public class SecurityConfig {
                                 "/api/v1/auth/register",
                                 "/api/v1/auth/login",
                                 "/api/v1/auth/forgot-password",
-                                "/api/v1/auth/reset-password")
+                                "/api/v1/auth/reset-password",
+                                "/api/v1/auth/validate-reset-token")
+                        .permitAll()
+                        
+                        // Allow user profile access (temporary - should be authenticated in production)
+                        .requestMatchers(
+                                "/api/v1/auth/user/**",
+                                "/api/v1/merchant-profile/**")
                         .permitAll()
 
                         // Allow admin access to user management endpoints
