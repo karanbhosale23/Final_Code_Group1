@@ -123,6 +123,13 @@ const TransactionPage = () => {
             </View>
             <Text style={styles.quickLinkText}>Add Txn</Text>
           </TouchableOpacity>
+
+          <TouchableOpacity style={styles.quickLinkItem}>
+            <View style={styles.quickLinkIcon}>
+              <Ionicons name="bar-chart" size={24} color="#4a90a4" />
+            </View>
+            <Text style={styles.quickLinkText}>Sale Report</Text>
+          </TouchableOpacity>
           
           <TouchableOpacity style={styles.quickLinkItem}>
             <View style={styles.quickLinkIcon}>
