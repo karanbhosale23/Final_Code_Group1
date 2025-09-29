@@ -10,6 +10,7 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Constants from "expo-constants";
@@ -141,6 +142,7 @@ const LogIn = () => {
         </View>
 
         <View style={styles.loginCard}>
+          <Image source={require('../../assets/Retail_Billing.jpg')} style={styles.logo} />
           <Text style={styles.loginTitle}>Login</Text>
 
           <TextInput
@@ -230,6 +232,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 10,
     elevation: 10,
+  },
+  logo: {
+    width: 200,
+    height: 200,
+    alignSelf: "center",
+    marginBottom: 20,
+    resizeMode: "contain",
   },
   loginTitle: {
     fontSize: 22,
