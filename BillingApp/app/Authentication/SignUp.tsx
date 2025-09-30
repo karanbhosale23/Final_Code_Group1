@@ -200,7 +200,7 @@ const SignUp = () => {
             </TouchableOpacity>
             <Text style={styles.headerTitle}>Create Account</Text>
           </View>
-          
+
           <View style={styles.formContainer}>
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Username</Text>
@@ -238,27 +238,29 @@ const SignUp = () => {
                 placeholderTextColor="#999"
               />
             </View>
-
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Password</Text>
               <View>
                 <Pressable 
-                  onPress={() => setShowPasswordRules(true)}
-                  style={{ position: 'absolute', right: 15, top: 15, zIndex: 10 }}
+                  onPress={() => {
+                    setShowPasswordRules(true);
+                    passwordInputRef.current?.focus();
+                  }}
                 >
-                  <Text style={{ color: '#c6040a' }}>Show Rules</Text>
+                  <TextInput
+                    ref={passwordInputRef}
+                    style={styles.input}
+                    placeholder="Create a strong password"
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry
+                    placeholderTextColor="#999"
+                    showSoftInputOnFocus={false}
+                  />
                 </Pressable>
-                <TextInput
-                  ref={passwordInputRef}
-                  style={styles.input}
-                  placeholder="Create a password"
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry={true}
-                  placeholderTextColor="#999"
-                />
               </View>
             </View>
+
 
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Business Name</Text>
