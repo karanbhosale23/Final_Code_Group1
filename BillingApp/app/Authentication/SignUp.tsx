@@ -191,6 +191,16 @@ const SignUp = () => {
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
+          <View style={styles.header}>
+            <TouchableOpacity 
+              style={styles.backButton}
+              onPress={() => router.back()}
+            >
+              <Text style={styles.backButtonText}>←</Text>
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>Create Account</Text>
+          </View>
+          
           <View style={styles.formContainer}>
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Username</Text>
