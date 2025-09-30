@@ -110,71 +110,88 @@ const SignUp = () => {
         }),
       });
 
+      // Get the response text first
+      const responseText = await response.text();
+      console.log('Raw response:', responseText); // Log the raw response for debugging
+      
+      // Try to parse as JSON, but don't fail if it's not valid JSON
+      let data = null;
+      try {
+        data = responseText ? JSON.parse(responseText) : null;
+        console.log('Parsed data:', data); // Log parsed data for debugging
+      } catch (e) {
+        console.log('Response is not valid JSON, checking for token in response text');
+        // Try to extract token from response text if it's not valid JSON
+        const tokenMatch = responseText.match(/token[:=]\s*['"]([^'"]+)['"]/);
+        if (tokenMatch && tokenMatch[1]) {
+          data = { token: tokenMatch[1] };
+          console.log('Extracted token from response text');
+        }
+      }
+
       if (response.ok) {
-        const data = await response.json();
+        // Clear form fields
+        setUsername('');
+        setEmail('');
+        setPhone('');
+        setPassword('');
+        setBusinessname('');
         
-        // Check if we got a token (auto-login after signup)
-        if (data.token) {
-          // Store JWT token and user data
-          await storeToken(data.token);
+        try {
+          // If we have a token (from JSON or extracted from text), store it
+          if (data?.token) {
+            await storeToken(data.token);
+            console.log('Token stored successfully');
+            
+            // Create user data object with available information
+            const userData: UserData = {
+              id: data.id || 0,
+              username: data.username || username.trim(),
+              email: data.email || email.trim(),
+              phoneNumber: data.phoneNumber || phone.trim(),
+              businessName: data.businessName || business.trim(),
+              role: data.role || "MERCHANT"
+            };
+            await storeUserData(userData);
+            console.log('User data stored successfully');
+          } else {
+            console.log('No token found in response');
+          }
           
-          const userData: UserData = {
-            id: data.id || 0,
-            username: data.username || username.trim(),
-            email: data.email || email.trim(),
-            phoneNumber: data.phoneNumber || phone.trim(),
-            businessName: data.businessName || business.trim(),
-            role: data.role || "MERCHANT"
-          };
-          await storeUserData(userData);
-          
-          Alert.alert("Success", "Registration completed! Welcome!");
-          console.log("Signup successful! Token stored:", data.token);
-          
-          // Navigate to Transaction page
+          // Redirect to Transaction page on successful signup
+          console.log('Redirecting to Transaction page');
           router.replace("/User_Dashboard/Transaction");
-        } else {
-          // If no token, just show success message and go to login
-          const msg = typeof data === 'string' ? data : (data.message || "Registration completed!");
-          Alert.alert("Success", msg);
-          router.push("/Authentication/LogIn");
+          return; // Exit the function after successful redirect
+          
+        } catch (error) {
+          console.error("Error during post-registration:", error);
+          // Even if there's an error with token storage, we can still redirect to login
+          // as the registration was successful
+          router.replace("/Authentication/LogIn");
+          return;
         }
       } else {
         const errorText = await response.text();
         Alert.alert("Error", `Status ${response.status}: ${errorText}`);
       }
     } catch (error) {
-      console.error('Signup error:', error);
-      Alert.alert("Error", "Could not connect to backend");
+      console.error("Signup error:", error);
+      Alert.alert("Error", "An error occurred during signup. Please try again.");
     }
   };
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      <KeyboardAvoidingView 
         style={styles.keyboardAvoidView}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <ScrollView 
+          style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
         >
-          {/* Header with Back Button */}
-          <View style={styles.header}>
-            <TouchableOpacity 
-              style={styles.backButton}
-              onPress={() => router.back()}
-            >
-              <Text style={styles.backButtonText}>←</Text>
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>Create Account</Text>
-          </View>
-
-          {/* Main Form Container */}
           <View style={styles.formContainer}>
-            {/* Form Inputs */}
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Username</Text>
               <TextInput
@@ -182,6 +199,7 @@ const SignUp = () => {
                 placeholder="Enter your username"
                 value={username}
                 onChangeText={setUsername}
+                autoCapitalize="none"
                 placeholderTextColor="#999"
               />
             </View>
@@ -203,7 +221,7 @@ const SignUp = () => {
               <Text style={styles.label}>Phone Number</Text>
               <TextInput
                 style={styles.input}
-                placeholder="phone number"
+                placeholder="Enter your phone number"
                 value={phone}
                 onChangeText={setPhone}
                 keyboardType="phone-pad"
@@ -215,24 +233,23 @@ const SignUp = () => {
               <Text style={styles.label}>Password</Text>
               <View>
                 <Pressable 
-                  onPress={() => {
-                    setShowPasswordRules(true);
-                    passwordInputRef.current?.focus();
-                  }}
+                  onPress={() => setShowPasswordRules(true)}
+                  style={{ position: 'absolute', right: 15, top: 15, zIndex: 10 }}
                 >
-                  <TextInput
-                    ref={passwordInputRef}
-                    style={styles.input}
-                    placeholder="Create a strong password"
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry
-                    placeholderTextColor="#999"
-                    showSoftInputOnFocus={false}
-                  />
+                  <Text style={{ color: '#c6040a' }}>Show Rules</Text>
                 </Pressable>
+                <TextInput
+                  ref={passwordInputRef}
+                  style={styles.input}
+                  placeholder="Create a password"
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={true}
+                  placeholderTextColor="#999"
+                />
               </View>
             </View>
+
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Business Name</Text>
               <TextInput
