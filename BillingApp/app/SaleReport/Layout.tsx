@@ -14,7 +14,7 @@ import SelectMonth from "./Components/SelectMonth";
 import ShareTransaction from "./Components/ShareTransaction";
 
 // Define the type for your stack parameters
-export type RootStackParamList = {
+export type RootStackParamListSale = {
   SaleReportMain: undefined;
   SaleDetails: { id: string }; // Example with params
   SaleDetailsEdit: { id: string };
@@ -27,7 +27,7 @@ export type RootStackParamList = {
   ShareTransaction: undefined;
 };
 
-const Stack = createNativeStackNavigator<RootStackParamList>();
+const Stack = createNativeStackNavigator<RootStackParamListSale>();
 
 const Layout = () => {
   return (

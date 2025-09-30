@@ -225,13 +225,6 @@ const Profile = () => {
           67% businessmen saw their business increase after sharing their visiting card
         </Text>
 
-        {/* Progress Section */}
-        <View style={styles.progressSection}>
-          <Text style={styles.progressText}>Profile 91% Complete.</Text>
-          <View style={styles.progressBarBackground}>
-            <View style={styles.progressBarFill} />
-          </View>
-        </View>
 
         {/* Tab Navigation */}
         <View style={styles.tabContainer}>
@@ -576,30 +569,7 @@ const styles = StyleSheet.create({
     lineHeight: 15
   },
   
-  // Progress Section
-  progressSection: {
-    marginHorizontal: 12,
-    marginBottom: 20
-  },
-  progressText: {
-    fontSize: 15,
-    fontFamily: "Inter-Bold",
-    fontWeight: "700",
-    color: "#000",
-    marginBottom: 6
-  },
-  progressBarBackground: {
-    height: 8,
-    backgroundColor: "#d9d9d9",
-    borderRadius: 10,
-    overflow: "hidden"
-  },
-  progressBarFill: {
-    height: "100%",
-    width: "91%",
-    backgroundColor: "#385dff",
-    borderRadius: 10
-  },
+  
   
   // Tab Navigation
   tabContainer: {

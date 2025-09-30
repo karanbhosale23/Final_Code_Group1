@@ -1,66 +1,60 @@
 import * as React from "react";
-import {StyleSheet, View, Text, TouchableOpacity} from "react-native";
+import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from "@expo/vector-icons";
 import Footer from "../../components/App_Components/Footer";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { isAuthenticated, getUserData, removeToken, UserData } from "../../utils/auth";
+import { useNavigation } from "@react-navigation/native";
+import type { RootStackParamList } from "../_layout";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import {
+  isAuthenticated,
+  getUserData,
+  removeToken,
+  UserData,
+} from "../../utils/auth";
 
-const TransactionPage = () => {
-  
-  const [activeTab, setActiveTab] = React.useState('transaction');
+// Define all routes used in your app
+
+
+const TransactionPage: React.FC = () => {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [loading, setLoading] = React.useState(true);
   const [userData, setUserData] = React.useState<UserData | null>(null);
-  const { username } = useLocalSearchParams<{ username?: string }>();
-  const displayName = Array.isArray(username) ? username[0] : username;
-  const router = useRouter();
+  const [activeTab, setActiveTab] =
+    React.useState<"transaction" | "party">("transaction");
 
-  // Check authentication on component mount
   React.useEffect(() => {
-    checkAuthAndLoadUser();
-  }, []);
-
-  const checkAuthAndLoadUser = async () => {
-    try {
-      const authenticated = await isAuthenticated();
-      if (!authenticated) {
-        // User is not authenticated, redirect to login
-        router.replace("/Authentication/LogIn");
+    const init = async () => {
+      const authed = await isAuthenticated();
+      if (!authed) {
+navigation.navigate("Authentication/LogIn" as never);
         return;
       }
-
-      // Load user data
-      const user = await getUserData();
-      setUserData(user);
-    } catch (error) {
-      console.log("Auth check error:", error);
-      router.replace("/Authentication/LogIn");
-    } finally {
+      const ud = await getUserData();
+      setUserData(ud || null);
       setLoading(false);
-    }
-  };
+    };
+    init();
+  }, []);
 
   const handleLogout = async () => {
-    try {
-      await removeToken();
-      router.replace("/Authentication/LogIn");
-    } catch (error) {
-      console.log("Logout error:", error);
-    }
+    await removeToken();
+    navigation.navigate("Authentication/LogIn" as never);
   };
 
   const handleProfileNavigation = () => {
-    router.push({
-      pathname: "./Profile",
-      params: { username: userData?.username || displayName || 'User' }
-    });
+navigation.navigate("User_Dashboard/Profile" as never);
   };
 
-  // Show loading screen while checking authentication
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <View
+          style={[
+            styles.container,
+            { justifyContent: "center", alignItems: "center" },
+          ]}
+        >
           <Text>Loading...</Text>
         </View>
       </SafeAreaView>
@@ -71,7 +65,9 @@ const TransactionPage = () => {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Welcome, {userData?.username || 'User'}!</Text>
+        <Text style={styles.headerTitle}>
+          Welcome, {userData?.username || "User"}!
+        </Text>
         <View style={styles.headerIcons}>
           <Ionicons name="code-slash" size={20} color="#fff" />
           <Ionicons name="settings-outline" size={20} color="#fff" />
@@ -83,9 +79,12 @@ const TransactionPage = () => {
 
       {/* User Section */}
       <View style={styles.userSection}>
-        <TouchableOpacity style={styles.userInfo} onPress={handleProfileNavigation}>
+        <TouchableOpacity
+          style={styles.userInfo}
+          onPress={handleProfileNavigation}
+        >
           <Ionicons name="person-circle-outline" size={22} color="#000" />
-          <Text style={styles.userName}>{userData?.username || 'User'}</Text>
+          <Text style={styles.userName}>{userData?.username || "User"}</Text>
         </TouchableOpacity>
         <View style={styles.userIcons}>
           <Ionicons name="notifications-outline" size={22} color="#000" />
@@ -95,19 +94,29 @@ const TransactionPage = () => {
 
       {/* Tab Navigation */}
       <View style={styles.tabContainer}>
-        <TouchableOpacity 
-          style={[styles.tab, activeTab === 'transaction' && styles.activeTab]}
-          onPress={() => setActiveTab('transaction')}
+        <TouchableOpacity
+          style={[styles.tab, activeTab === "transaction" && styles.activeTab]}
+          onPress={() => setActiveTab("transaction")}
         >
-          <Text style={[styles.tabText, activeTab === 'transaction' && styles.activeTabText]}>
+          <Text
+            style={[
+              styles.tabText,
+              activeTab === "transaction" && styles.activeTabText,
+            ]}
+          >
             Transaction Details
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity 
-          style={[styles.tab, activeTab === 'party' && styles.activeTab]}
-          onPress={() => setActiveTab('party')}
+        <TouchableOpacity
+          style={[styles.tab, activeTab === "party" && styles.activeTab]}
+          onPress={() => setActiveTab("party")}
         >
-          <Text style={[styles.tabText, activeTab === 'party' && styles.activeTabText]}>
+          <Text
+            style={[
+              styles.tabText,
+              activeTab === "party" && styles.activeTabText,
+            ]}
+          >
             Party Details
           </Text>
         </TouchableOpacity>
@@ -117,6 +126,7 @@ const TransactionPage = () => {
       <View style={styles.quickLinksContainer}>
         <Text style={styles.quickLinksTitle}>Quick Links</Text>
         <View style={styles.quickLinksGrid}>
+          
           <TouchableOpacity style={styles.quickLinkItem}>
             <View style={styles.quickLinkIcon}>
               <Ionicons name="add-circle" size={24} color="#c6040a" />
@@ -124,20 +134,20 @@ const TransactionPage = () => {
             <Text style={styles.quickLinkText}>Add Txn</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.quickLinkItem}>
+          <TouchableOpacity style={styles.quickLinkItem} onPress={() => navigation.navigate("SaleReportMain")}>
             <View style={styles.quickLinkIcon}>
               <Ionicons name="bar-chart" size={24} color="#4a90a4" />
             </View>
             <Text style={styles.quickLinkText}>Sale Report</Text>
           </TouchableOpacity>
-          
+
           <TouchableOpacity style={styles.quickLinkItem}>
             <View style={styles.quickLinkIcon}>
               <Ionicons name="settings" size={24} color="#666" />
             </View>
             <Text style={styles.quickLinkText}>Txn Settings</Text>
           </TouchableOpacity>
-          
+
           <TouchableOpacity style={styles.quickLinkItem}>
             <View style={styles.quickLinkIcon}>
               <Ionicons name="apps" size={24} color="#4a90a4" />
@@ -156,7 +166,7 @@ const TransactionPage = () => {
       <TouchableOpacity style={styles.addSaleButton}>
         <Text style={styles.addSaleText}>Add New Sale</Text>
       </TouchableOpacity>
-      
+
       {/* Voice Button */}
       <TouchableOpacity style={styles.voiceButton}>
         <Ionicons name="mic" size={24} color="#fff" />
@@ -173,36 +183,36 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#d3e4f4",
   },
-  
+
   // Header Styles
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#c6040a',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "#c6040a",
     paddingHorizontal: 20,
     paddingVertical: 15,
     paddingTop: 40,
   },
   headerTitle: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   headerIcons: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 15,
   },
   logoutButton: {
     marginLeft: 10,
   },
-  
+
   // User Section
   userSection: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#fff',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "#fff",
     paddingHorizontal: 20,
     paddingVertical: 20,
     shadowColor: "#000",
@@ -216,22 +226,22 @@ const styles = StyleSheet.create({
   },
   userName: {
     fontSize: 20,
-    fontWeight: '500',
-    color: '#000',
+    fontWeight: "500",
+    color: "#000",
   },
   userIcons: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 12,
   },
   userInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
   },
-  
+
   // Tab Navigation
   tabContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginHorizontal: 20,
     marginTop: 20,
     marginBottom: 15,
@@ -242,31 +252,31 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 20,
     marginHorizontal: 5,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderWidth: 1.5,
-    borderColor: 'rgba(0, 0, 0, 0.2)',
-    alignItems: 'center',
+    borderColor: "rgba(0, 0, 0, 0.2)",
+    alignItems: "center",
   },
   activeTab: {
-    backgroundColor: 'rgba(198, 4, 10, 0.1)',
-    borderColor: '#c6040a',
+    backgroundColor: "rgba(198, 4, 10, 0.1)",
+    borderColor: "#c6040a",
     borderWidth: 2,
   },
   tabText: {
     fontSize: 12,
-    fontWeight: '500',
-    color: '#000',
+    fontWeight: "500",
+    color: "#000",
     opacity: 0.6,
   },
   activeTabText: {
-    color: '#c6040a',
+    color: "#c6040a",
     opacity: 1,
-    fontWeight: '600',
+    fontWeight: "600",
   },
-  
+
   // Quick Links Section
   quickLinksContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     marginHorizontal: 20,
     borderRadius: 8,
     padding: 15,
@@ -281,53 +291,53 @@ const styles = StyleSheet.create({
   },
   quickLinksTitle: {
     fontSize: 14,
-    fontWeight: '500',
-    color: '#000',
+    fontWeight: "500",
+    color: "#000",
     marginBottom: 15,
   },
   quickLinksGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexDirection: "row",
+    justifyContent: "space-around",
   },
   quickLinkItem: {
-    alignItems: 'center',
+    alignItems: "center",
     width: 70,
   },
   quickLinkIcon: {
     width: 45,
     height: 45,
     borderRadius: 8,
-    backgroundColor: '#f8f9fa',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#f8f9fa",
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: '#e9ecef',
+    borderColor: "#e9ecef",
   },
   quickLinkText: {
     fontSize: 11,
-    color: '#000',
+    color: "#000",
     opacity: 0.8,
-    textAlign: 'center',
-    fontWeight: '500',
+    textAlign: "center",
+    fontWeight: "500",
   },
-  
+
   // Main Content
   mainContent: {
     flex: 1,
     marginHorizontal: 20,
     marginTop: 20,
   },
-  
+
   // Add New Sale Button
   addSaleButton: {
-    backgroundColor: '#c6040a',
+    backgroundColor: "#c6040a",
     marginHorizontal: 80,
     marginRight: 100,
     marginBottom: 20,
     paddingVertical: 12,
     borderRadius: 25,
-    alignItems: 'center',
+    alignItems: "center",
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -338,22 +348,22 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   addSaleText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: "600",
   },
-  
+
   // Voice Button
   voiceButton: {
-    position: 'absolute',
+    position: "absolute",
     right: 20,
     bottom: 80,
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: '#4a90a4',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#4a90a4",
+    justifyContent: "center",
+    alignItems: "center",
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -363,9 +373,6 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 6,
   },
-  
-  // Bottom Navigation
-  
 });
 
 export default TransactionPage;
