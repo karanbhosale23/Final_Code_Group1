@@ -22,6 +22,7 @@ public class AuthController {
     public AuthController(AuthService authService) {
         this.authService = authService;
     }
+
     // http://localhost:8080/api/v1/auth/register
     @PostMapping("/register")
     public ResponseEntity<String> register(@Valid @RequestBody RegisterRequestDTO request) {
@@ -29,14 +30,14 @@ public class AuthController {
         return new ResponseEntity<>("User registered successfully", HttpStatus.CREATED);
     }
 
-    //http://localhost:8080/api/v1/auth/login
+    // http://localhost:8080/api/v1/auth/login
     @PostMapping("/login")
     public ResponseEntity<AuthResponseDTO> login(@RequestBody AuthRequestDTO request) {
         AuthResponseDTO response = authService.authenticate(request);
         return ResponseEntity.ok(response);
     }
 
-   // http://localhost:8080/api/v1/auth/forgot-password
+    // http://localhost:8080/api/v1/auth/forgot-password
     @PostMapping("/forgot-password")
     public ResponseEntity<String> forgotPassword(@RequestBody Map<String, String> request) {
         try {
@@ -90,5 +91,14 @@ public class AuthController {
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.badRequest().body(ex.getMessage());
         }
+    }
+
+    // Validate JWT token endpoint
+    // http://localhost:8080/api/v1/auth/validate
+    @GetMapping("/validate")
+    public ResponseEntity<String> validateToken() {
+        // If the request reaches here, it means the JWT token is valid
+        // (because JwtFilter would have rejected invalid tokens)
+        return ResponseEntity.ok("Token is valid");
     }
 }

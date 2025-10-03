@@ -8,6 +8,7 @@ import type { RootStackParamList } from "../_layout";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import {
   isAuthenticated,
+  validateTokenWithServer,
   getUserData,
   removeToken,
   UserData,
@@ -25,14 +26,31 @@ const TransactionPage: React.FC = () => {
 
   React.useEffect(() => {
     const init = async () => {
-      const authed = await isAuthenticated();
-      if (!authed) {
-      router.replace("/Authentication/LogIn");
-        return;
+      try {
+        // First do a simple check to see if we have token and user data
+        const basicAuth = await isAuthenticated();
+        if (!basicAuth) {
+          console.log('No basic auth, redirecting to login');
+          router.replace("/Authentication/LogIn");
+          return;
+        }
+
+        // Get user data immediately since we know we have it
+        const ud = await getUserData();
+        setUserData(ud || null);
+        setLoading(false);
+
+        // Then validate with server in the background
+        const serverValidation = await validateTokenWithServer();
+        if (!serverValidation) {
+          console.log('Server validation failed, redirecting to login');
+          router.replace("/Authentication/LogIn");
+          return;
+        }
+      } catch (error) {
+        console.error('Error in Transaction init:', error);
+        router.replace("/Authentication/LogIn");
       }
-      const ud = await getUserData();
-      setUserData(ud || null);
-      setLoading(false);
     };
     init();
   }, []);
@@ -43,7 +61,7 @@ const TransactionPage: React.FC = () => {
   };
 
   const handleProfileNavigation = () => {
-  router.push("/User_Dashboard/Profile");
+    router.push("/User_Dashboard/Profile");
   };
 
   if (loading) {
@@ -126,7 +144,7 @@ const TransactionPage: React.FC = () => {
       <View style={styles.quickLinksContainer}>
         <Text style={styles.quickLinksTitle}>Quick Links</Text>
         <View style={styles.quickLinksGrid}>
-          
+
           <TouchableOpacity style={styles.quickLinkItem}>
             <View style={styles.quickLinkIcon}>
               <Ionicons name="add-circle" size={24} color="#c6040a" />

@@ -56,9 +56,15 @@ public class SecurityConfig {
                                 "/api/v1/auth/validate-reset-token")
                         .permitAll()
 
-                        // Allow user profile access (temporary - should be authenticated in production)
-                        .requestMatchers("/api/v1/auth/user/**")
+                        // Allow specific user profile endpoints without authentication (temporary)
+                        .requestMatchers(HttpMethod.GET, "/api/v1/auth/user/*")
                         .permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/auth/user/*")
+                        .permitAll()
+
+                        // Token validation requires authentication
+                        .requestMatchers("/api/v1/auth/validate")
+                        .authenticated()
 
                         // Allow admin access to user management endpoints
                         .requestMatchers(HttpMethod.GET, "/api/v1/users/**").hasRole("ADMIN")

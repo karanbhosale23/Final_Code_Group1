@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BASE_URL } from '../config/api';
 
 const TOKEN_KEY = 'jwt_token';
 const USER_KEY = 'user_data';
@@ -73,10 +74,56 @@ export const getUserData = async (): Promise<UserData | null> => {
   }
 };
 
-// Check if user is authenticated
+// Check if user is authenticated (simple token check for initial load)
 export const isAuthenticated = async (): Promise<boolean> => {
-  const token = await getToken();
-  return token !== null;
+  try {
+    const token = await getToken();
+    const userData = await getUserData();
+
+    // For initial app load, just check if both token and user data exist
+    if (token && userData) {
+      console.log('Token and user data found, assuming authenticated');
+      return true;
+    } else {
+      console.log('No token or user data found, not authenticated');
+      return false;
+    }
+  } catch (error) {
+    console.error('Error checking authentication:', error);
+    return false;
+  }
+};
+
+// Validate token against server (used for more thorough checks)
+export const validateTokenWithServer = async (): Promise<boolean> => {
+  try {
+    const token = await getToken();
+    if (!token) {
+      return false;
+    }
+
+    console.log('Validating token with server...');
+    const response = await authenticatedFetch(`${BASE_URL}/api/v1/auth/validate`);
+
+    if (response.ok) {
+      console.log('Token validation successful');
+      return true;
+    } else if (response.status === 401 || response.status === 403) {
+      console.log('Token validation failed - token invalid/expired');
+      // Token is invalid/expired, remove it
+      await removeToken();
+      return false;
+    } else {
+      console.log('Server error during token validation:', response.status);
+      // Server error, but token exists - assume authenticated for now
+      return true;
+    }
+  } catch (error) {
+    console.error('Error validating token with server:', error);
+    // Network error - if we have a token and user data, assume authenticated
+    const userData = await getUserData();
+    return !!(await getToken() && userData);
+  }
 };
 
 // Create authenticated fetch with JWT token
