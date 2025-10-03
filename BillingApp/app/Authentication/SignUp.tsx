@@ -113,7 +113,7 @@ const SignUp = () => {
       // Get the response text first
       const responseText = await response.text();
       console.log('Raw response:', responseText); // Log the raw response for debugging
-      
+
       // Try to parse as JSON, but don't fail if it's not valid JSON
       let data = null;
       try {
@@ -136,33 +136,44 @@ const SignUp = () => {
         setPhone('');
         setPassword('');
         setBusinessname('');
-        
+
         try {
           // If we have a token (from JSON or extracted from text), store it
           if (data?.token) {
             await storeToken(data.token);
             console.log('Token stored successfully');
-            
-            // Create user data object with available information
+
+            // Create user data object with available information including merchant profile fields
             const userData: UserData = {
               id: data.id || 0,
               username: data.username || username.trim(),
               email: data.email || email.trim(),
               phoneNumber: data.phoneNumber || phone.trim(),
               businessName: data.businessName || business.trim(),
-              role: data.role || "MERCHANT"
+              role: data.role || "MERCHANT",
+              // Merchant profile fields (empty for new users)
+              gstin: data.gstin || "",
+              phoneNumber2: data.phoneNumber2 || "",
+              businessAddress: data.businessAddress || "",
+              pincode: data.pincode || "",
+              businessDescription: data.businessDescription || "",
+              state: data.state || "",
+              businessType: data.businessType || "",
+              businessCategory: data.businessCategory || "",
+              signatureBase64: data.signatureBase64 || "",
+              signatureUrl: data.signatureUrl || ""
             };
             await storeUserData(userData);
             console.log('User data stored successfully');
           } else {
             console.log('No token found in response');
           }
-          
+
           // Redirect to Transaction page on successful signup
           console.log('Redirecting to Transaction page');
           router.replace("/User_Dashboard/Transaction");
           return; // Exit the function after successful redirect
-          
+
         } catch (error) {
           console.error("Error during post-registration:", error);
           // Even if there's an error with token storage, we can still redirect to login
@@ -182,17 +193,17 @@ const SignUp = () => {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         style={styles.keyboardAvoidView}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <ScrollView 
+        <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.header}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.backButton}
               onPress={() => router.back()}
             >
@@ -241,7 +252,7 @@ const SignUp = () => {
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Password</Text>
               <View>
-                <Pressable 
+                <Pressable
                   onPress={() => {
                     setShowPasswordRules(true);
                     passwordInputRef.current?.focus();
@@ -274,8 +285,8 @@ const SignUp = () => {
             </View>
 
             {/* Sign Up Button */}
-            <TouchableOpacity 
-              style={[styles.button, !(username && email && phone && password && business) && styles.buttonDisabled]} 
+            <TouchableOpacity
+              style={[styles.button, !(username && email && phone && password && business) && styles.buttonDisabled]}
               onPress={handleSignUp}
               disabled={!(username && email && phone && password && business)}
             >
@@ -301,7 +312,7 @@ const SignUp = () => {
         visible={showPasswordRules}
         onRequestClose={() => setShowPasswordRules(false)}
       >
-        <Pressable 
+        <Pressable
           style={styles.modalOverlay}
           onPress={() => setShowPasswordRules(false)}
         >
@@ -317,7 +328,7 @@ const SignUp = () => {
                 </Text>
               </View>
             ))}
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.okButton}
               onPress={() => setShowPasswordRules(false)}
             >

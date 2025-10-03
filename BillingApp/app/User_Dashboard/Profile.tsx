@@ -3,7 +3,7 @@ import { StyleSheet, View, Text, ScrollView, TextInput, TouchableOpacity, Alert,
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, router } from "expo-router";
 import Constants from "expo-constants";
-import { getUserData, authenticatedFetch, UserData } from "../../utils/auth";
+import { getUserData, authenticatedFetch, UserData, storeUserData } from "../../utils/auth";
 import ProtectedRoute from "../../components/Auth/ProtectedRoute";
 
 const getApiBase = () => {
@@ -39,111 +39,91 @@ const Profile = () => {
   const [signatureBase64, setSignatureBase64] = React.useState("");
   const [signatureUrl, setSignatureUrl] = React.useState("");
   const [loading, setLoading] = React.useState(false);
-  const [profileId, setProfileId] = React.useState<number | null>(null);
   const [activeTab, setActiveTab] = React.useState("basic");
+  const [dataLoaded, setDataLoaded] = React.useState(false);
 
   // Load user and profile data on component mount
   React.useEffect(() => {
-    loadUserDataFromStorage();
-    loadUserData();
+    const initializeData = async () => {
+      await loadUserDataFromStorage();
+    };
+    initializeData();
   }, []);
+
+  // Set data as loaded when user data is available
+  React.useEffect(() => {
+    if (userId) {
+      setDataLoaded(true);
+      console.log("User data available, profile ready");
+    }
+  }, [userId]);
 
   const loadUserDataFromStorage = async () => {
     try {
       const userData = await getUserData();
+
       if (userData) {
+        // Set user data in state
         setCurrentUsername(userData.username);
         setUserEmail(userData.email);
         setUserPhoneNumber(userData.phoneNumber);
         setUserBusinessName(userData.businessName);
         setUserId(userData.id);
-      }
-    } catch (error) {
-      console.log("Error loading user data from storage:", error);
-    }
-  };
 
-  const loadUserData = async () => {
-    if (!displayName) return;
-    
-    setLoading(true);
-    try {
-      // First, get user details from signup
-      const userResponse = await authenticatedFetch(`${API_BASE}/auth/user/${displayName}`);
-      
-      if (userResponse.ok) {
-        const userData = await userResponse.json();
-        // Populate user fields
-        setCurrentUsername(userData.username || "");
-        setUserEmail(userData.email || "");
-        setUserPhoneNumber(userData.phoneNumber || "");
-        setUserBusinessName(userData.businessName || "");
-        setUserId(userData.id);
-        
-        // Now try to get merchant profile data
-        if (userData.id) {
-          const profileResponse = await authenticatedFetch(`${API_BASE}/merchant-profile/user/${userData.id}`);
-          
-          if (profileResponse.ok) {
-            const profileData = await profileResponse.json();
-            // Populate profile fields
-            setPhoneNumber2(profileData.phoneNumber2 || "");
-            setBusinessAddress(profileData.businessAddress || "");
-            setPincode(profileData.pincode || "");
-            setBusinessDescription(profileData.businessDescription || "");
-            setGstin(profileData.gstin || "");
-            setState(profileData.state || "");
-            setBusinessType(profileData.businessType || "");
-            setBusinessCategory(profileData.businessCategory || "");
-            setSignatureBase64(profileData.signatureBase64 || "");
-            setSignatureUrl(profileData.signatureUrl || "");
-            setProfileId(profileData.id);
-          } else if (profileResponse.status === 404) {
-            // Profile doesn't exist yet, that's okay
-            console.log("Profile not found, will create new one");
-          }
+        console.log("User data loaded from storage - ID:", userData.id, "Username:", userData.username);
+
+        // Also load merchant profile data from user data
+        if (userData.gstin || userData.phoneNumber2 || userData.businessAddress) {
+          console.log("Loading merchant profile data from user storage");
+          setPhoneNumber2(userData.phoneNumber2 || "");
+          setBusinessAddress(userData.businessAddress || "");
+          setPincode(userData.pincode || "");
+          setBusinessDescription(userData.businessDescription || "");
+          setGstin(userData.gstin || "");
+          setState(userData.state || "");
+          setBusinessType(userData.businessType || "");
+          setBusinessCategory(userData.businessCategory || "");
+          setSignatureBase64(userData.signatureBase64 || "");
+          setSignatureUrl(userData.signatureUrl || "");
+          console.log("Merchant profile data loaded from storage");
         }
       } else {
-        throw new Error(`Failed to load user data: ${userResponse.status}`);
+        console.log("No user data found in storage");
       }
     } catch (error) {
-      console.log("Error loading data:", error);
-      Alert.alert("Error", "Failed to load user data");
-    } finally {
-      setLoading(false);
+      console.error("Error loading user data from storage:", error);
     }
   };
 
+
+
+
+
   const handleSubmit = async () => {
+    // Validate required fields
     if (!userBusinessName.trim()) {
       Alert.alert("Error", "Business name is required");
       return;
     }
 
+    if (!userEmail.trim()) {
+      Alert.alert("Error", "Email is required");
+      return;
+    }
+
+    if (!userPhoneNumber.trim()) {
+      Alert.alert("Error", "Phone number is required");
+      return;
+    }
+
     setLoading(true);
     try {
-      // First, update user details
-      const userUpdates = {
+      // Update all user data including merchant profile fields in one API call
+      const completeUserData = {
         email: userEmail.trim(),
         phoneNumber: userPhoneNumber.trim(),
-        businessName: userBusinessName.trim()
-      };
-
-      const userResponse = await fetch(`${API_BASE}/auth/user/${currentUsername}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(userUpdates)
-      });
-
-      if (!userResponse.ok) {
-        const errorText = await userResponse.text();
-        Alert.alert("Error", `Failed to update user details: ${errorText}`);
-        return;
-      }
-
-      // Then, update or create merchant profile
-      const profileData = {
-        user: { id: userId },
+        businessName: userBusinessName.trim(),
+        // Merchant profile fields
         gstin: gstin.trim(),
         phoneNumber2: phoneNumber2.trim(),
         pincode: pincode.trim(),
@@ -156,38 +136,70 @@ const Profile = () => {
         signatureUrl: signatureUrl.trim()
       };
 
-      let profileResponse;
-      if (profileId) {
-        // Update existing profile
-        profileResponse = await authenticatedFetch(`${API_BASE}/merchant-profile/${profileId}`, {
-          method: "PUT",
-          body: JSON.stringify(profileData)
-        });
-      } else {
-        // Create new profile
-        profileResponse = await authenticatedFetch(`${API_BASE}/merchant-profile`, {
-          method: "POST",
-          body: JSON.stringify(profileData)
-        });
-      }
+      const userResponse = await authenticatedFetch(`${API_BASE}/auth/user/${currentUsername}`, {
+        method: "PUT",
+        body: JSON.stringify(completeUserData)
+      });
 
-      if (profileResponse.ok) {
-        const savedProfile = await profileResponse.json();
-        setProfileId(savedProfile.id);
-        Alert.alert("Success", "Profile saved successfully!");
+      if (userResponse.ok) {
+        // Update user data in storage with all the new information
+        const updatedUserData: UserData = {
+          id: userId!,
+          username: currentUsername,
+          email: userEmail.trim(),
+          phoneNumber: userPhoneNumber.trim(),
+          businessName: userBusinessName.trim(),
+          role: 'MERCHANT',
+          // Merchant profile fields
+          gstin: gstin.trim(),
+          phoneNumber2: phoneNumber2.trim(),
+          pincode: pincode.trim(),
+          businessDescription: businessDescription.trim(),
+          businessAddress: businessAddress.trim(),
+          state: state.trim(),
+          businessType: businessType.trim(),
+          businessCategory: businessCategory.trim(),
+          signatureBase64: signatureBase64.trim(),
+          signatureUrl: signatureUrl.trim()
+        };
+
+        await storeUserData(updatedUserData);
+
+        Alert.alert("Success", "Profile saved successfully! Your data has been stored in the database.");
       } else {
-        const errorText = await profileResponse.text();
+        const errorText = await userResponse.text();
+        console.error("Profile save error:", errorText);
         Alert.alert("Error", `Failed to save profile: ${errorText}`);
       }
     } catch (error) {
-      Alert.alert("Error", "Could not connect to server");
+      console.error("Submit error:", error);
+      Alert.alert("Error", "Could not connect to server. Please check your internet connection and try again.");
     } finally {
       setLoading(false);
     }
   };
 
   const handleCancel = () => {
-    loadUserData(); // Reset form to original values
+    loadUserDataFromStorage(); // Reset form to original values
+  };
+
+  const handleRefresh = async () => {
+    console.log("🔄 Manual refresh triggered");
+    setDataLoaded(false);
+    setLoading(true);
+
+    try {
+      // Load user data from storage (includes merchant profile data now)
+      await loadUserDataFromStorage();
+      setDataLoaded(true);
+    } catch (error) {
+      console.error("❌ Error during refresh:", error);
+      setDataLoaded(true);
+    } finally {
+      setLoading(false);
+    }
+
+    console.log("✅ Refresh completed");
   };
   return (
     <SafeAreaView style={styles.container}>
@@ -198,11 +210,26 @@ const Profile = () => {
             <Text style={styles.backArrow}>←</Text>
           </TouchableOpacity>
           <Text style={styles.businessProfile}>Business Profile</Text>
-          <View style={styles.headerRight} />
+          <View style={styles.headerRight}>
+          </View>
         </View>
+
+
+
+        {/* Loading Status */}
+        {loading && (
+          <View style={styles.loadingIndicator}>
+            <Text style={styles.loadingText}>Loading profile data...</Text>
+          </View>
+        )}
 
         {/* Business Card */}
         <View style={styles.businessCard}>
+          {loading && (
+            <View style={styles.loadingOverlay}>
+              <Text style={styles.loadingText}>Loading profile...</Text>
+            </View>
+          )}
           <View style={styles.cardContent}>
             <Text style={styles.businessName}>{userBusinessName || "Business Name"}</Text>
             <Text style={styles.serviceDescription}>{businessDescription || "Service, Computer Equipments & Softwares"}</Text>
@@ -219,7 +246,9 @@ const Profile = () => {
           </TouchableOpacity>
           <View style={styles.redStripe} />
         </View>
-        
+
+
+
         {/* Business Growth Message */}
         <Text style={styles.businessGrowthText}>
           67% businessmen saw their business increase after sharing their visiting card
@@ -228,20 +257,20 @@ const Profile = () => {
 
         {/* Tab Navigation */}
         <View style={styles.tabContainer}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.tab, activeTab === "basic" && styles.activeTab]}
             onPress={() => setActiveTab("basic")}
           >
             <Text style={[styles.tabText, activeTab === "basic" && styles.activeTabText]}>Basic Details</Text>
           </TouchableOpacity>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.tab, activeTab === "business" && styles.activeTab]}
             onPress={() => setActiveTab("business")}
           >
             <Text style={[styles.tabText, activeTab === "business" && styles.activeTabText]}>Business Details</Text>
           </TouchableOpacity>
         </View>
-        
+
         {/* Tab Content */}
         {activeTab === "basic" && (
           <View>
@@ -255,7 +284,7 @@ const Profile = () => {
                 editable={!loading}
               />
             </View>
-            
+
             <View style={styles.formField}>
               <Text style={styles.fieldLabel}>GSTIN</Text>
               <View style={styles.gstinContainer}>
@@ -270,7 +299,7 @@ const Profile = () => {
                 <Text style={styles.showOnCard}>Show on Card</Text>
               </View>
             </View>
-            
+
             <View style={styles.formField}>
               <Text style={styles.fieldLabel}>Phone Number 1</Text>
               <TextInput
@@ -281,7 +310,7 @@ const Profile = () => {
                 editable={!loading}
               />
             </View>
-            
+
             <View style={styles.formField}>
               <Text style={styles.fieldLabel}>Phone Number 2</Text>
               <TextInput
@@ -292,7 +321,7 @@ const Profile = () => {
                 editable={!loading}
               />
             </View>
-            
+
             <View style={styles.formField}>
               <Text style={styles.fieldLabel}>Email ID</Text>
               <TextInput
@@ -304,7 +333,7 @@ const Profile = () => {
                 editable={!loading}
               />
             </View>
-            
+
             <View style={styles.formField}>
               <Text style={styles.fieldLabel}>Business Address</Text>
               <TextInput
@@ -316,7 +345,7 @@ const Profile = () => {
                 editable={!loading}
               />
             </View>
-            
+
             <View style={styles.formField}>
               <Text style={styles.fieldLabel}>PIN Code</Text>
               <TextInput
@@ -328,7 +357,7 @@ const Profile = () => {
                 editable={!loading}
               />
             </View>
-            
+
             <View style={styles.formField}>
               <Text style={styles.fieldLabel}>Business Description</Text>
               <TextInput
@@ -342,7 +371,7 @@ const Profile = () => {
             </View>
           </View>
         )}
-        
+
         {activeTab === "business" && (
           <View>
             {/* Business Details Form */}
@@ -355,7 +384,7 @@ const Profile = () => {
                 editable={!loading}
               />
             </View>
-            
+
             <View style={styles.formField}>
               <Text style={styles.fieldLabel}>Business Type</Text>
               <TextInput
@@ -365,7 +394,7 @@ const Profile = () => {
                 editable={!loading}
               />
             </View>
-            
+
             <View style={styles.formField}>
               <Text style={styles.fieldLabel}>Business Category</Text>
               <TextInput
@@ -380,12 +409,12 @@ const Profile = () => {
 
         {/* Signature Section */}
         <Text style={styles.signatureTitle}>Signature</Text>
-        
+
         <View style={styles.signatureContainer}>
           <View style={styles.signatureBox}>
             <Text style={styles.createSignatureText}>Create your signature here</Text>
           </View>
-          
+
           <View style={styles.signatureOptions}>
             <TouchableOpacity style={styles.signatureButton}>
               <Text style={styles.signatureButtonText}>Create</Text>
@@ -395,7 +424,7 @@ const Profile = () => {
             </TouchableOpacity>
           </View>
         </View>
-        
+
         {/* Hidden inputs for signature data */}
         <TextInput
           style={styles.hiddenInput}
@@ -403,7 +432,7 @@ const Profile = () => {
           onChangeText={setSignatureUrl}
           editable={!loading}
         />
-        
+
         <TextInput
           style={styles.hiddenInput}
           value={signatureBase64}
@@ -412,22 +441,26 @@ const Profile = () => {
           editable={!loading}
         />
 
+
+
         {/* Action Buttons */}
         <View style={styles.actionButtons}>
-          <TouchableOpacity 
-            style={[styles.cancelButton, loading && styles.disabledBtn]} 
+          <TouchableOpacity
+            style={[styles.cancelButton, loading && styles.disabledBtn]}
             onPress={handleCancel}
             disabled={loading}
           >
             <Text style={styles.cancelButtonText}>Cancel</Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={[styles.submitButton, loading && styles.disabledBtn]} 
+
+          <TouchableOpacity
+            style={[styles.submitButton, loading && styles.disabledBtn]}
             onPress={handleSubmit}
             disabled={loading}
           >
-            <Text style={styles.submitButtonText}>{loading ? "Saving..." : "Submit"}</Text>
+            <Text style={styles.submitButtonText}>
+              {loading ? "Saving to Database..." : "Save Profile"}
+            </Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -443,7 +476,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 20
   },
-  
+
   // Header
   header: {
     height: 73,
@@ -472,9 +505,11 @@ const styles = StyleSheet.create({
   },
   headerRight: {
     width: 40,
-    height: 40
+    height: 40,
+    justifyContent: "center",
+    alignItems: "center"
   },
-  
+
   // Business Card
   businessCard: {
     backgroundColor: "#fff",
@@ -556,7 +591,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fb2a2a",
     borderRadius: 5
   },
-  
+
   // Business Growth Message
   businessGrowthText: {
     fontSize: 12,
@@ -568,9 +603,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     lineHeight: 15
   },
-  
-  
-  
+
+
+
   // Tab Navigation
   tabContainer: {
     flexDirection: "row",
@@ -597,7 +632,7 @@ const styles = StyleSheet.create({
   activeTabText: {
     color: "#d93b3b"
   },
-  
+
   // Form Fields
   formField: {
     marginBottom: 20,
@@ -638,7 +673,7 @@ const styles = StyleSheet.create({
     color: "#666",
     opacity: 0.7
   },
-  
+
   // Signature Section
   signatureTitle: {
     fontSize: 14,
@@ -686,13 +721,13 @@ const styles = StyleSheet.create({
     color: "#000",
     opacity: 0.8
   },
-  
+
   // Hidden inputs for signature data
   hiddenInput: {
     height: 0,
     opacity: 0
   },
-  
+
   // Action Buttons
   actionButtons: {
     flexDirection: "row",
@@ -727,7 +762,34 @@ const styles = StyleSheet.create({
   },
   disabledBtn: {
     opacity: 0.6
-  }
+  },
+  loadingOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1,
+    borderRadius: 20
+  },
+  loadingText: {
+    fontSize: 14,
+    fontFamily: "Poppins-Medium",
+    color: "#666"
+  },
+  loadingIndicator: {
+    backgroundColor: "#f0f8ff",
+    borderRadius: 8,
+    padding: 15,
+    marginHorizontal: 21,
+    marginBottom: 15,
+    borderWidth: 1,
+    borderColor: "#e3f2fd",
+    alignItems: "center"
+  },
 });
 
 const ProtectedProfile = () => {

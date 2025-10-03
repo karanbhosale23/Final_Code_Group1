@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -54,11 +55,9 @@ public class SecurityConfig {
                                 "/api/v1/auth/reset-password",
                                 "/api/v1/auth/validate-reset-token")
                         .permitAll()
-                        
+
                         // Allow user profile access (temporary - should be authenticated in production)
-                        .requestMatchers(
-                                "/api/v1/auth/user/**",
-                                "/api/v1/merchant-profile/**")
+                        .requestMatchers("/api/v1/auth/user/**")
                         .permitAll()
 
                         // Allow admin access to user management endpoints

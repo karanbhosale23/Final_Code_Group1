@@ -91,25 +91,36 @@ const LogIn = () => {
 
       if (response.ok) {
         const data = await response.json();
-        
+
         // Store JWT token and user data
         if (data.token) {
           await storeToken(data.token);
-          
-          // Store user data if available
+
+          // Store user data including merchant profile fields
           const userData: UserData = {
             id: data.id || 0,
             username: data.username || username.trim(),
             email: data.email || "",
             phoneNumber: data.phoneNumber || "",
             businessName: data.businessName || "",
-            role: data.role || "MERCHANT"
+            role: data.role || "MERCHANT",
+            // Merchant profile fields from login response
+            gstin: data.gstin || "",
+            phoneNumber2: data.phoneNumber2 || "",
+            businessAddress: data.businessAddress || "",
+            pincode: data.pincode || "",
+            businessDescription: data.businessDescription || "",
+            state: data.state || "",
+            businessType: data.businessType || "",
+            businessCategory: data.businessCategory || "",
+            signatureBase64: data.signatureBase64 || "",
+            signatureUrl: data.signatureUrl || ""
           };
           await storeUserData(userData);
-          
+
+          console.log("Login successful! Full user data stored:", userData);
           Alert.alert("Welcome", `Hello, ${username.trim()}!`);
-          console.log("Login successful! Token stored:", data.token);
-          
+
           // Navigate to Transaction page
           router.replace("/User_Dashboard/Transaction");
         } else {

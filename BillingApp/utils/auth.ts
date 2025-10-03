@@ -10,6 +10,18 @@ export interface UserData {
   phoneNumber: string;
   businessName: string;
   role: string;
+
+  // Merchant Profile Fields
+  gstin?: string;
+  phoneNumber2?: string;
+  businessAddress?: string;
+  pincode?: string;
+  businessDescription?: string;
+  state?: string;
+  businessType?: string;
+  businessCategory?: string;
+  signatureBase64?: string;
+  signatureUrl?: string;
 }
 
 // Store JWT token
@@ -70,7 +82,7 @@ export const isAuthenticated = async (): Promise<boolean> => {
 // Create authenticated fetch with JWT token
 export const authenticatedFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
   const token = await getToken();
-  
+
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(options.headers as Record<string, string> || {}),

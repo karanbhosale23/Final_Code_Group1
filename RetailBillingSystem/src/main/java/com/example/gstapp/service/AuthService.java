@@ -116,6 +116,22 @@ public class AuthService {
         response.setToken(token);
         response.setUsername(user.getUsername());
         response.setRole(user.getRole().name());
+        response.setId(user.getId());
+        response.setEmail(user.getEmail());
+        response.setPhoneNumber(user.getPhoneNumber());
+        response.setBusinessName(user.getBusinessName());
+
+        // Include merchant profile fields
+        response.setGstin(user.getGstin());
+        response.setPhoneNumber2(user.getPhoneNumber2());
+        response.setBusinessAddress(user.getBusinessAddress());
+        response.setPincode(user.getPincode());
+        response.setBusinessDescription(user.getBusinessDescription());
+        response.setState(user.getState());
+        response.setBusinessType(user.getBusinessType());
+        response.setBusinessCategory(user.getBusinessCategory());
+        response.setSignatureBase64(user.getSignatureBase64());
+        response.setSignatureUrl(user.getSignatureUrl());
 
         return response;
     }
@@ -183,8 +199,8 @@ public class AuthService {
             String newEmail = updates.get("email");
             if (newEmail != null && !newEmail.trim().isEmpty()) {
                 // Check if email is already taken by another user
-                if (userRepository.findByEmail(newEmail).isPresent() && 
-                    !user.getEmail().equals(newEmail)) {
+                if (userRepository.findByEmail(newEmail).isPresent() &&
+                        !user.getEmail().equals(newEmail)) {
                     throw new IllegalArgumentException("Email already exists");
                 }
                 user.setEmail(newEmail.trim());
@@ -199,6 +215,38 @@ public class AuthService {
         if (updates.containsKey("businessName")) {
             String businessName = updates.get("businessName");
             user.setBusinessName(businessName != null ? businessName.trim() : null);
+        }
+
+        // Update merchant profile fields
+        if (updates.containsKey("gstin")) {
+            user.setGstin(updates.get("gstin"));
+        }
+        if (updates.containsKey("phoneNumber2")) {
+            user.setPhoneNumber2(updates.get("phoneNumber2"));
+        }
+        if (updates.containsKey("businessAddress")) {
+            user.setBusinessAddress(updates.get("businessAddress"));
+        }
+        if (updates.containsKey("pincode")) {
+            user.setPincode(updates.get("pincode"));
+        }
+        if (updates.containsKey("businessDescription")) {
+            user.setBusinessDescription(updates.get("businessDescription"));
+        }
+        if (updates.containsKey("state")) {
+            user.setState(updates.get("state"));
+        }
+        if (updates.containsKey("businessType")) {
+            user.setBusinessType(updates.get("businessType"));
+        }
+        if (updates.containsKey("businessCategory")) {
+            user.setBusinessCategory(updates.get("businessCategory"));
+        }
+        if (updates.containsKey("signatureBase64")) {
+            user.setSignatureBase64(updates.get("signatureBase64"));
+        }
+        if (updates.containsKey("signatureUrl")) {
+            user.setSignatureUrl(updates.get("signatureUrl"));
         }
 
         return userRepository.save(user);
