@@ -3,7 +3,7 @@ import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import Footer from "../../components/App_Components/Footer";
-import { useNavigation } from "@react-navigation/native";
+import { router } from "expo-router";
 import type { RootStackParamList } from "../_layout";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import {
@@ -17,7 +17,7 @@ import {
 
 
 const TransactionPage: React.FC = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  // Using Expo Router for navigation
   const [loading, setLoading] = React.useState(true);
   const [userData, setUserData] = React.useState<UserData | null>(null);
   const [activeTab, setActiveTab] =
@@ -27,7 +27,7 @@ const TransactionPage: React.FC = () => {
     const init = async () => {
       const authed = await isAuthenticated();
       if (!authed) {
-navigation.navigate("Authentication/LogIn" as never);
+      router.replace("/Authentication/LogIn");
         return;
       }
       const ud = await getUserData();
@@ -39,11 +39,11 @@ navigation.navigate("Authentication/LogIn" as never);
 
   const handleLogout = async () => {
     await removeToken();
-    navigation.navigate("Authentication/LogIn" as never);
+    router.replace("/Authentication/LogIn");
   };
 
   const handleProfileNavigation = () => {
-navigation.navigate("User_Dashboard/Profile" as never);
+  router.push("/User_Dashboard/Profile");
   };
 
   if (loading) {
@@ -134,7 +134,7 @@ navigation.navigate("User_Dashboard/Profile" as never);
             <Text style={styles.quickLinkText}>Add Txn</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.quickLinkItem} onPress={() => navigation.navigate("SaleReportMain")}>
+          <TouchableOpacity style={styles.quickLinkItem} onPress={() => router.push("/SaleReportMain")}>
             <View style={styles.quickLinkIcon}>
               <Ionicons name="bar-chart" size={24} color="#4a90a4" />
             </View>

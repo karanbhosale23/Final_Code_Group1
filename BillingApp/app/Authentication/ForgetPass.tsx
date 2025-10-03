@@ -9,7 +9,7 @@ import {
   Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { BASE_URL } from "../config/api";
+import { BASE_URL } from "../../config/api";
 
 interface ForgetPassProps {
   visible: boolean;
