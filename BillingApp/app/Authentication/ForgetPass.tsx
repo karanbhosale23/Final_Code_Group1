@@ -9,7 +9,16 @@ import {
   Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { BASE_URL } from "../../config/api";
+import Constants from "expo-constants";
+
+const getApiBase = () => {
+  const debuggerHost = Constants.manifest?.debuggerHost || Constants.expoConfig?.hostUri;
+  if (debuggerHost) {
+    const ip = debuggerHost.split(":")[0];
+    return `http://${ip}:8080`;
+  }
+  return "http://localhost:8080";
+};
 
 interface ForgetPassProps {
   visible: boolean;
@@ -65,7 +74,8 @@ const ForgetPass: React.FC<ForgetPassProps> = ({ visible, onClose }) => {
     setIsLoading(true);
     
     try {
-      const response = await fetch(`${BASE_URL}/api/v1/auth/forgot-password`, {
+      const API_BASE = getApiBase();
+      const response = await fetch(`${API_BASE}/api/v1/auth/forgot-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: email.trim().toLowerCase() }),
@@ -74,7 +84,7 @@ const ForgetPass: React.FC<ForgetPassProps> = ({ visible, onClose }) => {
       if (response.ok) {
         Alert.alert(
           "Success", 
-          `Password reset link has been sent to ${email.trim().toLowerCase()}. Please check your email inbox and spam folder.`,
+          `Password reset link has been sent to ${email.trim().toLowerCase()}. Please check your email.`,
           [{ text: "OK", onPress: () => onClose() }]
         );
         setIsDisabled(true);
